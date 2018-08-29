@@ -1,0 +1,46 @@
+#include "Gimbal.h"
+
+Gimbal::Gimbal():
+    madgwick(0.05),
+    mpu("mpu65"),
+    attitude(madgwick, mpu),
+    calibration(mpu),
+    attitude_control(attitude, param.p_stabilize_roll, param.p_stabilize_pitch, param.p_stabilize_yaw,
+                     param.pid_rate_roll, param.pid_rate_pitch, param.pid_rate_yaw),
+    param(),
+    param_loader(var_info)
+{
+    exit_serial_thread = false;
+    exit_attitude_thread = false;
+    exit_control_thread = false;
+    exit_can_thread = false;
+}
+
+void Gimbal::setup()
+{
+    serial.start_init();
+    attitude.start_init();
+    can.start_init();
+}
+// serial update
+void Gimbal::serial_update(void *parameter)
+{
+        serial.update();
+}
+// attitude update
+void Gimbal::attitude_update(void *parameter)
+{
+        attitude.update();
+}
+// control update
+void Gimbal::control_update(void *parameter)
+{
+    attitude_control.rate_controller_run();
+}
+// can update
+void Gimbal::can_update(void *parameter)
+{
+    can.update();
+}
+
+Gimbal gimbal;

@@ -1,0 +1,10 @@
+.\objects\xdotc.o: apps\Function\pinverse\xdotc.c
+.\objects\xdotc.o: apps\Function\pinverse\rt_nonfinite.h
+.\objects\xdotc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\xdotc.o: apps\Function\pinverse\rtwtypes.h
+.\objects\xdotc.o: apps\Function\pinverse\pinverse.h
+.\objects\xdotc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\xdotc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\xdotc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\xdotc.o: apps\Function\pinverse\pinverse_types.h
+.\objects\xdotc.o: apps\Function\pinverse\xdotc.h

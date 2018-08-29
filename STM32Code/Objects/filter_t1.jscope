@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options IsRTTSession="0" IsRTTWithTimeStamp="1" SamplingPeriod="100" Connection="1" SerialNo="0" IP="" TargetDevice="Cortex-M4" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="E:\xd_bgc_t3_optm_2018_01_03\Objects\XD_SPRain_BGC.axf" />
+            <DataFile Name="" />
+            <RawFile Name="" />
+            <Scope>
+                <Options TimeResolutionUs="1000000" />
+            </Scope>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="scop_accx" Address="0x20000828" Type="int" TypeID="12" Size="4" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" YMinSampled="0" YMaxSampled="0" YAvgSampled="0" Offset="4" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="200" MaxValue="40000" File="apps\Function\Attitude.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_accx_fir" Address="0x20000830" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="1061997773" YMaxSampled="1061997773" YAvgSampled="1061997773" Offset="8" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="200" MaxValue="40000" File="apps\Function\Attitude.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_accx_lp" Address="0x2000082C" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="80" YMaxSampled="80" YAvgSampled="80" Offset="12" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="200" MaxValue="40000" File="apps\Function\Attitude.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>

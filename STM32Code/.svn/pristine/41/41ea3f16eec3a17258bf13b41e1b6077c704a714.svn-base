@@ -1,0 +1,49 @@
+// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
+/// @file	AC_P.cpp
+/// @brief	Generic P algorithm
+
+#include <AP_Math.h>
+#include "PD.h"
+
+const AP_Param::GroupInfo AC_PD::var_info[] PROGMEM = {
+    // @Param: P
+    // @DisplayName: PI Proportional Gain
+    // @Description: P Gain which produces an output value that is proportional to the current error value
+    AP_GROUPINFO("P",    0, AC_PD, _kp, 0),
+	  
+	  AP_GROUPINFO("D",    1, AC_PD, _kd, 0),
+	
+    AP_GROUPEND
+};
+
+float AC_PD::get_p(float error)
+{
+	  _input = error;
+    return (float)error * _kp;
+}
+
+float AC_PD::get_d()
+{
+	 _derivative = _input - _last_input;
+	 _last_input = _input;
+	 return (float)_derivative * _kd / _dt;
+}
+
+float AC_PD::get_pd(float error)
+{
+	return get_p(error) + get_d();
+}
+	
+
+
+
+void AC_PD::load_gains()
+{
+
+}
+
+void AC_PD::save_gains()
+{
+
+}

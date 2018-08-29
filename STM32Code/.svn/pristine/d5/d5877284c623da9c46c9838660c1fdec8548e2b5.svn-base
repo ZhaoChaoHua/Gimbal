@@ -1,0 +1,119 @@
+// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
+/// @file	AC_PID.cpp
+/// @brief	Generic PID algorithm
+
+#include <AP_Math.h>
+#include "PD.h"
+
+const AP_Param::GroupInfo AC_PD::var_info[] PROGMEM = {
+    // @Param: P
+    // @DisplayName: PID Proportional Gain
+    // @Description: P Gain which produces an output value that is proportional to the current error value
+    AP_GROUPINFO("P",    0, AC_PD, _kp, 0),
+
+    // @Param: D
+    // @DisplayName: PID Derivative Gain
+    // @Description: D Gain which produces an output that is proportional to the rate of change of the error
+    AP_GROUPINFO("D",    1, AC_PD, _kd, 0),
+
+    // @Param: FILT_HZ
+    // @DisplayName: PID Input filter frequency in Hz
+    // @Description: Input filter frequency in Hz
+    // @Unit: Hz
+    AP_GROUPINFO("FILT_HZ", 2, AC_PD, _filt_hz, AC_PID_FILT_HZ_DEFAULT),
+
+    AP_GROUPEND
+};
+
+// Constructor
+AC_PD::AC_PD(float initial_p, float initial_d, float initial_filt_hz, float dt) :
+    _dt(dt),
+    _input(0.0f),
+    _derivative(0.0f)
+{
+    _kp = initial_p;
+    _kd = initial_d;
+    filt_hz(initial_filt_hz);
+
+    // reset input filter to first value received
+    _flags._reset_filter = true;
+}
+
+// set_dt - set time step in seconds
+void AC_PD::set_dt(float dt)
+{
+    // set dt and calculate the input filter alpha
+    _dt = dt;
+}
+
+// filt_hz - set input filter hz
+void AC_PD::filt_hz(float hz)
+{
+    _filt_hz = fabsf(hz);
+
+    // sanity check _filt_hz
+    _filt_hz = max(_filt_hz, AC_PID_FILT_HZ_MIN);
+}
+
+// set_input_filter_d - set input to PID controller
+//  only input to the D portion of the controller is filtered
+//  this should be called before any other calls to get_p, get_i or get_d
+void AC_PD::set_input_filter_d(float input)
+{
+    // don't process inf or NaN
+    if (!isfinite(input)) {
+        return;
+    }
+
+    // reset input filter to value received
+    if (_flags._reset_filter) {
+        _flags._reset_filter = false;
+        _derivative = 0.0f;
+    }
+
+    // update filter and calculate derivative
+    if (_dt > 0.0f) {
+        float derivative = (input - _input) / _dt;
+        _derivative = _derivative + get_filt_alpha() * (derivative-_derivative);
+    }
+
+    _input = input;
+}
+
+float AC_PD::get_p()
+{
+    return _input * _kp;
+}
+
+float AC_PD::get_d()
+{
+    // derivative component
+    return _kd * _derivative;
+}
+
+float AC_PD::get_pd()
+{
+    return get_p() + get_d();
+}
+
+/// Overload the function call operator to permit easy initialisation
+void AC_PD::operator() (float p, float i, float d, float imaxval, float input_filt_hz, float dt)
+{
+    _kp = p;
+    _kd = d;
+    _filt_hz = input_filt_hz;
+    _dt = dt;
+}
+
+// calc_filt_alpha - recalculate the input filter alpha
+float AC_PD::get_filt_alpha() const
+{
+    if (is_zero(_filt_hz)) {
+        return 1.0f;
+    }
+
+    // calculate alpha
+    float rc = 1/(M_2PI*_filt_hz);
+    return _dt / (_dt + rc);
+}

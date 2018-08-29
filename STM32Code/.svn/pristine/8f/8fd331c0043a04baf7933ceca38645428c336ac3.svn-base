@@ -1,0 +1,446 @@
+#include "Gimbal.h"
+
+int scop_tms;
+int scop_roll;
+int scop_pitch;
+int scop_yaw;
+int scop_rollspeed;
+int scop_pitchspeed;
+int scop_yawspeed;
+int scop_ax_id_rx;
+int scop_param_id_rx;
+int scop_param_rx;
+int scop_eff_set_ready;
+
+int scop_r_mot;
+int scop_p_mot;
+int scop_y_mot;
+
+Gimbal::Gimbal():
+    madgwick(0.1),//0.002
+    mpu("mpu65"),
+    attitude(madgwick,mpu),
+    calibration(mpu),
+    attitude_control(attitude, 
+                     param.pd_stabilize_roll, param.pd_stabilize_pitch, param.pd_stabilize_yaw,
+                     param.pid_rate_roll, param.pid_rate_pitch, param.pid_rate_yaw),
+    mavlink(),
+    param(),
+    param_loader(var_info)
+{
+    exit_serial_thread = false;
+    exit_attitude_thread = false;
+    exit_control_thread = false;
+    exit_can_thread = false;
+    exit_packing_thread = false;
+}
+
+void Gimbal::setup(const Scheduler::Task *tasks, uint8_t num_tasks)
+{
+    scheduler.init(tasks, num_tasks);
+    serial.start_init();
+    attitude.start_init();
+    can.start_init();
+    
+    if(!AP_Param::check_var_info())
+        rt_kprintf("[err]Bad var table!\n");
+    else {
+        //param_loader.save_default_all();
+        // Load all parameters
+        param_loader.load_all();
+    }
+}
+// serial update
+void Gimbal::serial_update(void *parameter)
+{
+	 serial.serial2mavlink(&mavlink_msg_rx);
+	 //generate_efficient_data_pck(mavlink.eff_ax_update, mavlink.eff_param_update);
+	 //mavlink.update_eff_param();
+	 //send_efficient_data_pck(parameter);  
+   //send_controller_realtime_data(parameter);	
+	 //generate_attitude_pck(parameter);
+	 //send_attitude_pck(parameter);
+	generate_attitude_quat_pck(parameter);
+	send_attitude_quat_pck(parameter);
+}
+
+void Gimbal::packing_update(void *parameter)
+{
+	  decode_msg(parameter);
+	  set_param_from_efficient_data_pck(parameter);
+}
+
+// attitude update
+void Gimbal::attitude_update(void *parameter)
+{
+    attitude.update();
+}
+// control update
+float sr = 0;
+float sp = 0;
+float sy = 0;
+void Gimbal::control_update(void *parameter)
+{
+    //attitude_control.angle_ef_roll_pitch_yaw(50,50,0,0);
+    //attitude_control.angle_ef_roll_pitch_rate_ef_yaw(0,0,5);
+    attitude_control.rate_controller_run();
+    can.send_control_rpy(attitude_control.motor_r, attitude_control.motor_p, attitude_control.motor_y);
+    //can.send_control_rp(attitude_control.motor_R(), attitude_control.motor_P());
+    //can.send_control_y(attitude_control.motor_Y());
+	
+    scop_r_mot = attitude_control.motor_r;
+    scop_p_mot = attitude_control.motor_p;
+    scop_y_mot = attitude_control.motor_y;
+    
+    scop_roll = attitude.euler.x * 100;
+    scop_pitch = attitude.euler.y * 100;
+    scop_yaw = attitude.euler.z * 100;
+}
+// can update
+void Gimbal::can_update(void *parameter)
+{
+    can.update();
+}
+
+// Get an Attitude pck from attitude class
+void Gimbal::generate_attitude_pck(void *parameter)
+{
+    //attitude_pck.time_boot_ms = madgwick.dt_ms;
+    attitude_pck.roll = attitude.euler.x;
+    attitude_pck.pitch = attitude.euler.y;
+    attitude_pck.yaw = attitude.euler.z;
+    attitude_pck.rollspeed = attitude.Gyro_af.x*57.29577951308232f;
+    attitude_pck.pitchspeed = attitude.Gyro_af.y*57.29577951308232f;
+    attitude_pck.yawspeed = attitude.Gyro_af.z*57.29577951308232f;
+}
+
+// Send an Attitude pck by serial
+void Gimbal::send_attitude_pck(void *parameter)
+{
+    mavlink.attitude_pack(MAV_TYPE_GIMBAL, MAV_COMP_ID_IMU, &mavlink_msg_tx,
+                attitude_pck.time_boot_ms,
+                attitude_pck.roll, attitude_pck.pitch, attitude_pck.yaw,
+                attitude_pck.rollspeed, attitude_pck.pitchspeed, attitude_pck.yawspeed);
+    serial.send_mavlink(&mavlink_msg_tx);	
+}
+
+void Gimbal::generate_attitude_quat_pck(void *parameter)
+{
+	attitude_quat_pck.time_boot_ms = 0;
+	attitude_quat_pck.q1 = madgwick.get_q0();
+	attitude_quat_pck.q2 = madgwick.get_q1();
+	attitude_quat_pck.q3 = madgwick.get_q2();
+	attitude_quat_pck.q4 = madgwick.get_q3();
+	attitude_quat_pck.rollspeed = attitude.Gyro_af.x*57.29577951308232f;
+	attitude_quat_pck.pitchspeed = attitude.Gyro_af.y*57.29577951308232f;
+	attitude_quat_pck.yawspeed = attitude.Gyro_af.z*57.29577951308232f;
+}
+
+void Gimbal::send_attitude_quat_pck(void *parameter)
+{
+	mavlink.attitude_quaternion_pack(MAV_TYPE_GIMBAL, MAV_COMP_ID_IMU, &mavlink_msg_tx,
+	                                 attitude_quat_pck.time_boot_ms,
+	                                 attitude_quat_pck.q1, attitude_quat_pck.q2, attitude_quat_pck.q3, attitude_quat_pck.q4, 
+	                                 attitude_quat_pck.rollspeed, attitude_quat_pck.pitchspeed, attitude_quat_pck.yawspeed);
+	serial.send_mavlink(&mavlink_msg_tx);
+}           
+	
+
+// Get a control parameter from the controller
+// axis_id: roll = 0; pitch = 1; yaw = 2
+void Gimbal::generate_control_parameter_pck(uint8_t axis_id)
+{
+    control_param_pck.axis_id = axis_id;
+    // If require a Roll axis Control parameter pck
+    if(axis_id == MAVLINK_MSG_ID_CONTROL_PARAM_AXIS_ROLL)
+    {
+        control_param_pck.rate_p = param.pid_rate_roll.kP();
+        control_param_pck.rate_i = param.pid_rate_roll.kI();
+        control_param_pck.rate_d = param.pid_rate_roll.kD();
+        control_param_pck.rate_i_max = param.pid_rate_roll.imax();
+        control_param_pck.rate_filt_hz = param.pid_rate_roll.filt_hz();
+        control_param_pck.stabilize_p = param.pd_stabilize_roll.kP();
+        control_param_pck.stabilize_d = 0;  // Don't need this item now
+    }
+    // If require a Pitch axis Control parameter pck
+    if(axis_id == MAVLINK_MSG_ID_CONTROL_PARAM_AXIS_PITCH)
+    {
+        control_param_pck.rate_p = param.pid_rate_pitch.kP();
+        control_param_pck.rate_i = param.pid_rate_pitch.kI();
+        control_param_pck.rate_d = param.pid_rate_pitch.kD();
+        control_param_pck.rate_i_max = param.pid_rate_pitch.imax();
+        control_param_pck.rate_filt_hz = param.pid_rate_pitch.filt_hz();
+        control_param_pck.stabilize_p = param.pd_stabilize_pitch.kP();
+        control_param_pck.stabilize_d = 0;  // Don't need this item now
+    }
+    // If require a Yaw axis Control parameter pck
+    if(axis_id == MAVLINK_MSG_ID_CONTROL_PARAM_AXIS_PITCH)
+    {
+        control_param_pck.rate_p = param.pid_rate_yaw.kP();
+        control_param_pck.rate_i = param.pid_rate_yaw.kI();
+        control_param_pck.rate_d = param.pid_rate_yaw.kD();
+        control_param_pck.rate_i_max = param.pid_rate_yaw.imax();
+        control_param_pck.rate_filt_hz = param.pid_rate_yaw.filt_hz();
+        control_param_pck.stabilize_p = param.pd_stabilize_yaw.kP();
+        control_param_pck.stabilize_d = 0;  // Don't need this item now
+    }
+}
+
+void Gimbal::send_control_parameter_pck(void *parameter)
+{
+	  mavlink.control_param_pack(MAV_TYPE_GIMBAL, MAV_COMP_ID_CONTROLLER, &mavlink_msg_tx, control_param_pck.axis_id, 
+	                             control_param_pck.rate_p, control_param_pck.rate_i, control_param_pck.rate_d,
+	                             control_param_pck.rate_i_max, control_param_pck.rate_filt_hz,
+	                             control_param_pck.stabilize_p, control_param_pck.stabilize_d);
+	  serial.send_mavlink(&mavlink_msg_tx);
+}
+
+int scop_q0, scop_q1, scop_q2, scop_q3;
+int scop_param;
+
+void Gimbal::generate_efficient_data_pck(uint8_t axis_id, uint8_t param_id)
+{
+    efficient_data_pck.axis_id = axis_id;
+    efficient_data_pck.param_id = param_id;
+    switch(axis_id)
+    {
+        case MAVLINK_AX_ROLL:
+            switch(param_id)
+            {
+                case MAVLINK_PARAM_RATE_P: 
+                    efficient_data_pck.param = param.pid_rate_roll.kP(); 
+                  break;
+                case MAVLINK_PARAM_RATE_I: 
+                    efficient_data_pck.param = param.pid_rate_roll.kI();
+                  break;
+                case MAVLINK_PARAM_RATE_D: 
+                    efficient_data_pck.param = param.pid_rate_roll.kD();
+                  break;
+                case MAVLINK_PARAM_RATE_I_MAX: 
+                    efficient_data_pck.param = param.pid_rate_roll.imax();
+                  break;
+                case MAVLINK_PARAM_RATE_F_HZ: 
+                    efficient_data_pck.param = param.pid_rate_roll.filt_hz();
+                  break;
+                case MAVLINK_PARAM_STAB_P:
+                    efficient_data_pck.param = param.pd_stabilize_roll.kP();
+                  break;
+                case MAVLINK_PARAM_STAB_D:
+                    efficient_data_pck.param = 0;  //Don't need this item now
+                  break;
+                default:
+                    break;
+            }
+            break;
+        case MAVLINK_AX_PITCH:
+            switch(param_id)
+            {
+                case MAVLINK_PARAM_RATE_P: 
+                    efficient_data_pck.param = param.pid_rate_pitch.kP(); 
+                  break;
+                case MAVLINK_PARAM_RATE_I: 
+                    efficient_data_pck.param = param.pid_rate_pitch.kI();
+                  break;
+                case MAVLINK_PARAM_RATE_D: 
+                    efficient_data_pck.param = param.pid_rate_pitch.kD();
+                  break;
+                case MAVLINK_PARAM_RATE_I_MAX: 
+                    efficient_data_pck.param = param.pid_rate_pitch.imax();
+                  break;
+                case MAVLINK_PARAM_RATE_F_HZ: 
+                    efficient_data_pck.param = param.pid_rate_pitch.filt_hz();
+                  break;
+                case MAVLINK_PARAM_STAB_P:
+                    efficient_data_pck.param = param.pd_stabilize_pitch.kP();
+                  break;
+                case MAVLINK_PARAM_STAB_D:
+                    efficient_data_pck.param = 0;  //Don't need this item now
+                  break;
+                default:
+                    break;
+            }
+            break;
+        case MAVLINK_AX_YAW:
+            switch(param_id)
+            {
+                case MAVLINK_PARAM_RATE_P: 
+                    efficient_data_pck.param = param.pid_rate_yaw.kP(); 
+                  break;
+                case MAVLINK_PARAM_RATE_I: 
+                    efficient_data_pck.param = param.pid_rate_yaw.kI();
+                  break;
+                case MAVLINK_PARAM_RATE_D: 
+                    efficient_data_pck.param = param.pid_rate_yaw.kD();
+                  break;
+                case MAVLINK_PARAM_RATE_I_MAX: 
+                    efficient_data_pck.param = param.pid_rate_yaw.imax();
+                  break;
+                case MAVLINK_PARAM_RATE_F_HZ: 
+                    efficient_data_pck.param = param.pid_rate_yaw.filt_hz();
+                  break;
+                case MAVLINK_PARAM_STAB_P:
+                    efficient_data_pck.param = param.pd_stabilize_yaw.kP();
+                  break;
+                case MAVLINK_PARAM_STAB_D:
+                    efficient_data_pck.param = 0;  //Don't need this item now
+                  break;
+                default:
+                    break;
+            }
+            break;
+        default:
+            break;
+    }
+    efficient_data_pck.q0 = madgwick.get_q0();
+    efficient_data_pck.q1 = madgwick.get_q1();
+    efficient_data_pck.q2 = madgwick.get_q2();
+    efficient_data_pck.q3 = madgwick.get_q3();	
+}
+
+void Gimbal::set_param_from_efficient_data_pck(void *parameter)
+{
+	if(!serial.data_rx_ready) return;
+	serial.data_rx_ready = false;
+	scop_eff_set_ready = (int)serial.data_rx_ready;
+	switch(efficient_data_pck_rx.axis_id)
+	{
+		case MAVLINK_AX_ROLL:
+			switch(efficient_data_pck_rx.param_id)
+			{
+				case MAVLINK_PARAM_RATE_P:
+                    param.pid_rate_roll.kP(efficient_data_pck_rx.param);
+                    scop_param_rx = param.pid_rate_roll.kP();
+                    break;
+				case MAVLINK_PARAM_RATE_I:
+                    param.pid_rate_roll.kI(efficient_data_pck_rx.param);
+                    scop_param_rx = param.pid_rate_roll.kI();
+                    break;
+				case MAVLINK_PARAM_RATE_D:
+					param.pid_rate_roll.kD(efficient_data_pck_rx.param);
+                    scop_param_rx = param.pid_rate_roll.kD();
+                    break;
+				case MAVLINK_PARAM_RATE_I_MAX:
+					param.pid_rate_roll.imax(efficient_data_pck_rx.param);
+                    scop_param_rx = param.pid_rate_roll.imax();
+                    break;
+				case MAVLINK_PARAM_RATE_F_HZ:
+					param.pid_rate_roll.filt_hz(efficient_data_pck_rx.param);
+                    scop_param_rx = param.pid_rate_roll.filt_hz();
+                    break;
+				case MAVLINK_PARAM_STAB_P:
+					param.pd_stabilize_roll.kP(efficient_data_pck_rx.param);
+                    scop_param_rx = param.pd_stabilize_roll.kP();
+                    break;
+				case MAVLINK_PARAM_STAB_D:
+					break;
+				default:
+					break;
+			}
+			break;
+		case MAVLINK_AX_PITCH:
+			switch(efficient_data_pck_rx.param_id)
+			{
+				case MAVLINK_PARAM_RATE_P:
+					param.pid_rate_pitch.kP(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_I:
+					param.pid_rate_pitch.kI(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_D:
+					param.pid_rate_pitch.kD(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_I_MAX:
+					param.pid_rate_pitch.imax(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_F_HZ:
+					param.pid_rate_pitch.filt_hz(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_STAB_P:
+					param.pd_stabilize_pitch.kP(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_STAB_D:
+					break;
+				default:
+					break;
+			}
+			break;
+		case MAVLINK_AX_YAW:
+			switch(efficient_data_pck_rx.param_id)
+			{
+				case MAVLINK_PARAM_RATE_P:
+					param.pid_rate_yaw.kP(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_I:
+					param.pid_rate_yaw.kI(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_D:
+					param.pid_rate_yaw.kD(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_I_MAX:
+					param.pid_rate_yaw.imax(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_RATE_F_HZ:
+					param.pid_rate_yaw.filt_hz(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_STAB_P:
+					param.pd_stabilize_yaw.kP(efficient_data_pck_rx.param);
+                    break;
+				case MAVLINK_PARAM_STAB_D:
+					break;
+				default:
+					break;
+			}
+			break;
+		default:
+	    break;
+	}											
+}
+
+
+void Gimbal::send_efficient_data_pck(void *parameter)
+{
+	  mavlink.efficient_data_packing(MAV_TYPE_GIMBAL, MAV_COMP_ID_CONTROLLER, &mavlink_msg_tx,
+												        efficient_data_pck.axis_id, efficient_data_pck.param_id, efficient_data_pck.param,
+												        efficient_data_pck.q0, efficient_data_pck.q1, efficient_data_pck.q2, efficient_data_pck.q3);
+		scop_q0 = (int)(efficient_data_pck.q0*10000);
+		scop_q1 = (int)(efficient_data_pck.q1*10000);
+		scop_q2 = (int)(efficient_data_pck.q2*10000);
+		scop_q3 = (int)(efficient_data_pck.q3*10000);
+		//scop_param = (int)(efficient_data_pck.param*10000);
+		serial.send_mavlink(&mavlink_msg_tx);
+}
+int scope_t_cnt = 0;
+void Gimbal::send_controller_realtime_data(void *parameter)
+{
+	mavlink.controller_motor_realtime_data_packing(MAV_TYPE_GIMBAL, MAV_COMP_ID_CONTROLLER, &mavlink_msg_tx,
+	                                               madgwick.get_q0(), madgwick.get_q1(), madgwick.get_q2(), madgwick.get_q3(),
+	                                               (float*)(&(can.motors_params_for_serial[can.ax_motor_for_serial].params[0])));
+	serial.send_mavlink(&mavlink_msg_tx);
+	scope_t_cnt++;
+}
+
+void Gimbal::decode_msg(void *parameter)
+{
+	scop_eff_set_ready = (int)serial.data_rx_ready;
+	if(this->serial.data_rx_ready)
+	{
+		if(this->mavlink_msg_rx.msg_id == MAVLINK_MSG_ID_EFF_DATA)
+		{
+			mavlink.efficient_data_decode(&mavlink_msg_rx, &efficient_data_pck_rx);
+		}
+	}
+}
+
+rt_event_t Gimbal::Sys_event()
+{
+    return &Scheduler::Sys_Event;
+}
+
+void Gimbal::scheduler_run()
+{
+    // tell the scheduler one tick has passed
+    scheduler.tick();
+    scheduler.run(500);
+}
+
+Gimbal gimbal;

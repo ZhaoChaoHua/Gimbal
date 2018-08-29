@@ -1,0 +1,87 @@
+// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
+/// @file	AC_PD.h
+/// @brief	Generic PID algorithm, with EEPROM-backed storage of constants.
+
+#ifndef __AC_PD_H__
+#define __AC_PD_H__
+
+#include <stdlib.h>
+#include <math.h>
+#include "parameter.h"
+
+/// @class	AC_P
+/// @brief	Object managing one P controller
+class AC_PD {
+public:
+
+    /// Constructor for P that saves its settings to EEPROM
+    ///
+    /// @note	PIs must be named to avoid either multiple parameters with the
+    ///			same name, or an overly complex constructor.
+    ///
+    /// @param  initial_p       Initial value for the P term.
+    ///
+    AC_PD(
+        float kp, float kd, float dt)
+    {
+        _kp = kp;
+			  _kd = kd;
+			  _dt = dt;
+			  _last_input = 0;
+    }
+
+    /// Iterate the P controller, return the new control value
+    ///
+    /// Positive error produces positive output.
+    ///
+    /// @param error	The measured error value
+    /// @param dt		The time delta in milliseconds (note
+    ///					that update interval cannot be more
+    ///					than 65.535 seconds due to limited range
+    ///					of the data type).
+    ///
+    /// @returns		The updated control output.
+    ///
+    float       get_p(float error);
+		
+		float       get_d();
+		
+		float       get_pd(float error);
+		
+    void        set_dt(float dt) { _dt = dt;}
+
+    /// Load gain properties
+    ///
+    void        load_gains();
+
+    /// Save gain properties
+    ///
+    void        save_gains();
+
+    /// @name	parameter accessors
+    //@{
+
+    /// Overload the function call operator to permit relatively easy initialisation
+    void operator() (const float p, const float d) { _kp = p; _kd = d;}
+
+    // accessors
+    float       kP() const { return _kp; }
+    void        kP(const float v) { _kp = v; }
+		
+		float       kD() const { return _kd; }
+		void        kD(const float v) { _kd = v; }
+
+    static const struct AP_Param::GroupInfo        var_info[];
+private:
+    AP_Float        _kp;
+		AP_Float        _kd;
+
+    float           _derivative;  
+    float           _input;
+    float           _last_input;
+    float           _dt;
+    
+};
+
+#endif // __AC_PD_H__

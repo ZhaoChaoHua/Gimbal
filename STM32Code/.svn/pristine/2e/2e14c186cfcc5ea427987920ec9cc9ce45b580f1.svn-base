@@ -1,0 +1,59 @@
+#ifndef __GIMBAL_H__
+#define __GIMBAL_H__
+ 
+#include <rtthread.h>
+#include "stm32f4xx.h"
+#include "parameter.h"
+#include "AttitudeControl.h"
+#include "Attitude.h"
+#include "accelerometer_calibration.h"
+#include "CAN_com.h"
+#include "serial_com.h"
+#include "time_measure.h"
+#include "bgc_param.h"
+
+#ifdef __cplusplus
+
+class Gimbal
+{
+public:
+	friend class BGC_PARAM;
+	Gimbal(void);
+	void setup();
+    // thread control parameter
+    bool exit_serial_thread;
+    bool exit_attitude_thread;
+    bool exit_control_thread;
+    bool exit_can_thread;
+
+    // serial update
+    void serial_update(void *parameter);
+    // attitude update
+    void attitude_update(void *parameter);
+    // control update
+    void control_update(void *parameter);
+    // can update
+    void can_update(void *parameter);
+
+private:
+	Time_point         time;
+	CAN                can;
+	SerialManager      serial;
+    Madgwick         madgwick;
+    MPU6500            mpu;
+	Attitude           attitude;
+    Accel_Cal          calibration;
+	AC_AttitudeControl attitude_control;
+	BGC_PARAM          param;
+    AP_Param           param_loader;
+
+	// ²ÎÊý
+	static const AP_Param::Info var_info[];
+	// gimbal
+	
+};
+
+extern Gimbal gimbal;
+
+#endif
+#endif

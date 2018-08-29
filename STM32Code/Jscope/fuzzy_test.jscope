@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options IsRTTSession="0" IsRTTWithTimeStamp="1" SamplingPeriod="100" Connection="1" SerialNo="0" IP="" TargetDevice="Cortex-M4" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="E:\xd_bgc_t3_optm_fuzzy_control\Objects\XD_SPRain_BGC.axf" />
+            <DataFile Name="..\..\..\Matlab\T4\fuzzy_data_1.csv\" />
+            <RawFile Name="..\..\..\Matlab\T4\fuzzy_data_1.csv\" />
+            <Scope>
+                <Options TimeResolutionUs="2000000" />
+            </Scope>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="scop_fc_ce" Address="0x20001AA8" Type="int" TypeID="12" Size="4" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" YMinSampled="-1000" YMaxSampled="990" YAvgSampled="420" Offset="4" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="500" MaxValue="1000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_den" Address="0x200004A0" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="5196" YMaxSampled="10367" YAvgSampled="8060" Offset="8" ShowInGraph="0" YOffset="200" IsAutoConfig="1" YResolution="10000" MaxValue="20000" File="apps\Function\fuzzy_control.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_e" Address="0x20001AA4" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="-1000" YMaxSampled="990" YAvgSampled="-2" Offset="12" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="500" MaxValue="1000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_firing1" Address="0x2000048C" Type="int" TypeID="12" Size="4" GraphColorRed="160" GraphColorGreen="32" GraphColorBlue="240" YMinSampled="0" YMaxSampled="100" YAvgSampled="8" Offset="16" ShowInGraph="0" YOffset="200" IsAutoConfig="0" YResolution="50" MaxValue="200" File="apps\Function\fuzzy_control.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_firing2" Address="0x20000490" Type="int" TypeID="12" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="0" YMaxSampled="99" YAvgSampled="30" Offset="20" ShowInGraph="0" YOffset="200" IsAutoConfig="1" YResolution="50" MaxValue="100" File="apps\Function\fuzzy_control.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_firing3" Address="0x20000494" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="191" GraphColorBlue="255" YMinSampled="0" YMaxSampled="99" YAvgSampled="8" Offset="24" ShowInGraph="0" YOffset="200" IsAutoConfig="1" YResolution="50" MaxValue="100" File="apps\Function\fuzzy_control.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_firing4" Address="0x20000498" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="100" GraphColorBlue="0" YMinSampled="0" YMaxSampled="99" YAvgSampled="30" Offset="28" ShowInGraph="0" YOffset="200" IsAutoConfig="1" YResolution="50" MaxValue="100" File="apps\Function\fuzzy_control.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_num" Address="0x2000049C" Type="int" TypeID="12" Size="4" GraphColorRed="205" GraphColorGreen="133" GraphColorBlue="63" YMinSampled="-1999" YMaxSampled="1998" YAvgSampled="433" Offset="32" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="2000" MaxValue="4000" File="apps\Function\fuzzy_control.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_out" Address="0x20001AAC" Type="int" TypeID="12" Size="4" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" YMinSampled="-1933" YMaxSampled="1930" YAvgSampled="521" Offset="36" ShowInGraph="1" YOffset="200" IsAutoConfig="0" YResolution="2000" MaxValue="2000000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>

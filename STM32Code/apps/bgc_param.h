@@ -1,0 +1,198 @@
+#ifndef __GIMBAL_PARAM_H__
+#define __GIMBAL_PARAM_H__
+ 
+#include <rtthread.h>
+#include "stm32f4xx.h"
+#include "parameter.h"
+#include "AttitudeControl.h"
+#include "Attitude.h"
+#include "accelerometer_calibration.h"
+#include "CAN_com.h"
+#include "serial_com.h"
+#include "time_measure.h"
+
+#ifdef __cplusplus
+
+//////////////////////////////////////////////////////////////////////////////
+// Rate controller gains
+//
+#ifndef RATE_ROLL_P
+ # define RATE_ROLL_P        		0.150f
+#endif
+#ifndef RATE_ROLL_I
+ # define RATE_ROLL_I        		0.100f
+#endif
+#ifndef RATE_ROLL_D
+ # define RATE_ROLL_D        		0.004f
+#endif
+#ifndef RATE_ROLL_IMAX
+ # define RATE_ROLL_IMAX         	2000
+#endif
+#ifndef RATE_ROLL_FILT_HZ
+ # define RATE_ROLL_FILT_HZ         20.0f
+#endif
+
+#ifndef RATE_PITCH_P
+ # define RATE_PITCH_P       		0.150f
+#endif
+#ifndef RATE_PITCH_I
+ # define RATE_PITCH_I       		0.100f
+#endif
+#ifndef RATE_PITCH_D
+ # define RATE_PITCH_D       		0.004f
+#endif
+#ifndef RATE_PITCH_IMAX
+ # define RATE_PITCH_IMAX        	2000
+#endif
+#ifndef RATE_PITCH_FILT_HZ
+ # define RATE_PITCH_FILT_HZ        20.0f
+#endif
+
+#ifndef RATE_YAW_P
+ # define RATE_YAW_P              	0.200f
+#endif
+#ifndef RATE_YAW_I
+ # define RATE_YAW_I              	0.020f
+#endif
+#ifndef RATE_YAW_D
+ # define RATE_YAW_D              	0.000f
+#endif
+#ifndef RATE_YAW_IMAX
+ # define RATE_YAW_IMAX            	1000
+#endif
+#ifndef RATE_YAW_FILT_HZ
+ # define RATE_YAW_FILT_HZ          5.0f
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+// Stop mode defaults
+//
+#ifndef BRAKE_MODE_SPEED_Z
+ # define BRAKE_MODE_SPEED_Z     250 // z-axis speed in cm/s in Brake Mode
+#endif
+#ifndef BRAKE_MODE_DECEL_RATE
+ # define BRAKE_MODE_DECEL_RATE  750 // acceleration rate in cm/s/s in Brake Mode
+#endif
+
+//////////////////////////////////////////////////////////////////////////////
+// Velocity (horizontal) gains
+//
+#ifndef VEL_XY_P
+ # define VEL_XY_P              1.0f
+#endif
+#ifndef VEL_XY_I
+ # define VEL_XY_I              0.5f
+#endif
+#ifndef VEL_XY_IMAX
+ # define VEL_XY_IMAX           1000
+#endif
+#ifndef VEL_XY_FILT_HZ
+ # define VEL_XY_FILT_HZ        5.0f
+#endif
+
+// Stabilize (angle controller) gains
+#ifndef STABILIZE_ROLL_P
+ # define STABILIZE_ROLL_P          100.0f
+#endif
+
+#ifndef STABILIZE_PITCH_P
+ # define STABILIZE_PITCH_P         100.0f
+#endif
+
+#ifndef  STABILIZE_YAW_P
+ # define STABILIZE_YAW_P           100.0f
+#endif
+
+#ifndef  STABILIZE_ROLL_D           
+ # define STABILIZE_ROLL_D          0.0f
+#endif
+
+#ifndef  STABILIZE_PITCH_D           
+ # define STABILIZE_PITCH_D          0.0f
+#endif
+
+#ifndef  STABILIZE_YAW_D           
+ # define STABILIZE_YAW_D          0.0f
+#endif
+
+#ifndef OUTSIDE_LIMIT
+  #define OUTSIDE_LIMIT            1.0f
+#endif
+
+
+// run at 400Hz on all systems
+# define MAIN_LOOP_RATE    400
+# define MAIN_LOOP_SECONDS 0.0025f
+# define MAIN_LOOP_MICROS  2500
+
+class BGC_PARAM
+{
+public:
+    enum {
+        // PID controller parameter pid_rate_ (7)
+        k_param_pid_rate_roll = 1,
+        k_param_pid_rate_pitch = 8,
+        k_param_pid_rate_yaw   = 15,
+        // P controller parameter p_stabilize_(1)
+        //k_param_p_stabilize_pitch = 22,
+        //k_param_p_stabilize_roll  = 23,
+        //k_param_p_stabilize_yaw   = 24,
+        // Mahony IMU parameter mahony_imu (10)
+        k_param_madgwick = 25,
+        // Attitude Controller (8)
+        k_param_attitude_control = 35,
+        // CAN encoder center angle (6)
+        k_param_can = 43,
+        // PD controller parameter pd_stabilize(5)
+        k_param_pd_stabilize_roll = 49,
+        k_param_pd_stabilize_pitch = 54,
+        k_param_pd_stabilize_yaw = 59,
+        // mpu acc calibration (8)
+        k_param_mpu = 64,
+        
+				// ekf param (9)
+				k_param_ekf = 72,
+				
+				// Direction Align (7)
+				k_param_direction_align = 84
+    };
+    
+    AC_PID                  pid_rate_roll;
+    AC_PID                  pid_rate_pitch;
+    AC_PID                  pid_rate_yaw;
+		
+    AC_PD                   pd_stabilize_roll;
+    AC_PD                   pd_stabilize_pitch;
+    AC_PD                   pd_stabilize_yaw;
+
+    BGC_PARAM():
+        // PID controller	    initial P	      initial I         initial D       initial imax        initial filt hz     pid rate
+        //---------------------------------------------------------------------------------------------------------------------------------
+        pid_rate_roll           (RATE_ROLL_P,     RATE_ROLL_I,      RATE_ROLL_D,    RATE_ROLL_IMAX,     RATE_ROLL_FILT_HZ,  MAIN_LOOP_SECONDS),
+        pid_rate_pitch          (RATE_PITCH_P,    RATE_PITCH_I,     RATE_PITCH_D,   RATE_PITCH_IMAX,    RATE_PITCH_FILT_HZ, MAIN_LOOP_SECONDS),
+        pid_rate_yaw            (RATE_YAW_P,      RATE_YAW_I,       RATE_YAW_D,     RATE_YAW_IMAX,      RATE_YAW_FILT_HZ,   MAIN_LOOP_SECONDS),
+
+        // P controller	        initial P
+        //----------------------------------------------------------------------
+        //p_stabilize_roll        (STABILIZE_ROLL_P),
+        //p_stabilize_pitch       (STABILIZE_PITCH_P),
+        //p_stabilize_yaw         (STABILIZE_YAW_P),
+				
+        // PD controller         initial P					initial D             initial filt hz            pd rate
+        //-----------------------------------------------------------------------------------------------------------------
+        pd_stabilize_roll       (STABILIZE_ROLL_P,		STABILIZE_ROLL_D,		RATE_ROLL_FILT_HZ,      MAIN_LOOP_SECONDS, OUTSIDE_LIMIT),
+        pd_stabilize_pitch      (STABILIZE_PITCH_P,		STABILIZE_ROLL_D,		RATE_PITCH_FILT_HZ,     MAIN_LOOP_SECONDS, OUTSIDE_LIMIT),
+        pd_stabilize_yaw        (STABILIZE_YAW_P,		STABILIZE_ROLL_D,		RATE_YAW_FILT_HZ,       MAIN_LOOP_SECONDS, OUTSIDE_LIMIT)
+    {
+    }
+private:
+	
+	// 参数
+	static const AP_Param::Info var_info[];
+	
+};
+
+extern const AP_Param::Info var_info[];
+
+#endif
+#endif

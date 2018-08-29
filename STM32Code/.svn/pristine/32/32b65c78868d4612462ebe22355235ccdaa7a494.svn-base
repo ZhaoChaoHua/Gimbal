@@ -1,0 +1,240 @@
+/*
+ * File      : application.c
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2006, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ * 2009-01-05     Bernard      the first version
+ * 2014-04-27     Bernard      make code cleanup. 
+ * 2016-03-14     Lavi
+ */
+
+#include <cstdlib>
+#include <memory>
+#include <functional>
+#include "timers.h"
+#include "Gimbal.h"
+#include "thread_config.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <board.h>
+#include <rtthread.h>
+#include <idle_thread.h>
+#include "e2pfs.h"
+    
+#ifdef RT_USING_DFS
+#include <dfs_init.h>
+#include <dfs_fs.h>
+#include <drivers/mmcsd_core.h>
+#include "stm32f4xx_sd.h"
+#ifdef RT_USING_DFS_ELMFAT
+#include <dfs_elm.h>
+#endif
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+
+// timer counter
+static uint8_t tim_cnt;
+
+static rt_thread_t serial_thread;
+static rt_thread_t attitude_thread;
+static rt_thread_t control_thread;
+static rt_thread_t can_thread;
+
+static struct rt_event Sys_Event;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+// ------------------全局线程事件触发------------------
+void time_update_isr()
+{
+    // 2000Hz更新速率
+    tim_cnt++;
+    rt_event_send(&Sys_Event, ATTITUDE_EVENT);
+    rt_event_send(&Sys_Event, CONTROL_EVENT);
+}
+
+static void main_time_init()
+{
+    SP_Timer3.pause();
+    SP_Timer3.setPriority(0x01);
+    SP_Timer3.setCounterMode(TIM_CounterMode_Up);
+    SP_Timer3.setPeriod(500);
+    SP_Timer3.attachInterrupt(TIMER_UPDATE, time_update_isr);
+    SP_Timer3.refresh();
+    SP_Timer3.resume();
+}
+/* ----------------------------------------------------------------------- */
+
+/* --------------------------------线程初始化----------------------------- */
+// Serial process thread
+// thread stack    : 2048
+// thread priority : 0x10
+// thread stick    : 6
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_serial_stack[SERIAL_PROCESS_STACK];
+void rt_entry_thread_serial(void* parameter)
+{
+    while(!gimbal.exit_serial_thread)
+    {
+        // 100Hz
+        gimbal.serial_update(parameter);
+        rt_thread_delay(1);
+    }
+}
+// Attitude process thread
+// thread stack    : 1024
+// thread priority : 0x04
+// thread stick    : 2
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_attitude_stack[ATTITUDE_PROCESS_STACK];
+void rt_entry_thread_attitude(void* parameter)
+{
+    rt_uint32_t e;
+    while(!gimbal.exit_attitude_thread)
+    {
+        rt_event_recv(&Sys_Event, ATTITUDE_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+        gimbal.attitude_update(parameter);
+    }
+}
+
+// Control process thread
+// thread stack    : 1024
+// thread priority : 0x04
+// thread stick    : 2
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_control_stack[CONTROL_PROCESS_STACK];
+void rt_entry_thread_control(void* parameter)
+{
+    rt_uint32_t e;
+    while(!gimbal.exit_control_thread)
+    {
+        rt_event_recv(&Sys_Event, CONTROL_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+        gimbal.control_update(parameter);
+    }
+}
+
+// CAN process thread
+// thread stack    : 1024
+// thread priority : 0x06
+// thread stick    : 4
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_can_stack[CAN_PROCESS_STACK];
+void rt_entry_thread_can(void* parameter)
+{
+    while(!gimbal.exit_can_thread)
+    {
+        gimbal.can_update(parameter);
+    }
+}
+
+void rt_init_thread_entry(void* parameter)
+{
+    e2pfs_fsinfo();
+    // init system events
+    rt_event_init(&Sys_Event,"sys",RT_IPC_FLAG_FIFO);
+    // Function & parameter init
+    gimbal.setup();
+    // serial thread init
+    serial_thread = rt_thread_create("serial",
+                                     rt_entry_thread_serial,
+                                     RT_NULL,
+                                     SERIAL_PROCESS_STACK,
+                                     SERIAL_PROCESS_PRIORITY,
+                                     SERIAL_PROCESS_TICK);
+    if (serial_thread != RT_NULL)
+        rt_thread_startup(serial_thread);
+    // attitude thread init
+    attitude_thread = rt_thread_create("attitude",
+                                       rt_entry_thread_attitude, 
+                                       RT_NULL,
+                                       ATTITUDE_PROCESS_STACK, 
+                                       ATTITUDE_PROCESS_PRIORITY, 
+                                       ATTITUDE_PROCESS_TICK);
+    if (attitude_thread != RT_NULL)
+        rt_thread_startup(attitude_thread);
+    // control thread init
+    control_thread = rt_thread_create("control",
+                                      rt_entry_thread_control,
+                                      RT_NULL,
+                                      CONTROL_PROCESS_STACK, 
+                                      CONTROL_PROCESS_PRIORITY, 
+                                      CONTROL_PROCESS_TICK);
+    if (control_thread != RT_NULL)
+        rt_thread_startup(control_thread);
+    // can bus thread init
+    can_thread = rt_thread_create("can",
+                                   rt_entry_thread_can, 
+                                   RT_NULL,
+                                   CAN_PROCESS_STACK, 
+                                   CAN_PROCESS_PRIORITY, 
+                                   CAN_PROCESS_TICK);
+    if (can_thread != RT_NULL)
+        rt_thread_startup(can_thread);
+    
+    main_time_init();
+#ifdef RT_USING_DFS
+	rt_mmcsd_core_init();
+	rt_mmcsd_blk_init();
+	stm32f4xx_sdio_init();
+	rt_thread_delay(RT_TICK_PER_SECOND);
+
+	/* initialize the device file system */
+	dfs_init();
+#ifdef RT_USING_DFS_ELMFAT
+	/* initialize the elm chan FatFS file system*/
+	elm_init();
+	if (dfs_mount("sd0", "/", "elm", 0, 0) == 0)
+	{
+		rt_kprintf("[init]SDCard File System initialized!\n");
+	}
+	else
+	{
+		rt_kprintf("[err]SDCard File System initialzation failed!\n");
+	}
+#endif
+#endif
+    rt_kprintf("->System start\n");
+}
+
+int rt_application_init()
+{
+    rt_thread_t init_thread;
+
+#if (RT_THREAD_PRIORITY_MAX == 32)
+    init_thread = rt_thread_create("init",
+                                   rt_init_thread_entry, RT_NULL,
+                                   2048, 2, 20);
+#else
+    init_thread = rt_thread_create("init",
+                                   rt_init_thread_entry, RT_NULL,
+                                   2048, 20, 20);
+#endif
+    if (init_thread != RT_NULL)
+        rt_thread_startup(init_thread);
+    
+    // 设置空闲线程钩子函数
+    idle_hook_init();
+
+    return 0;
+}
+
+#ifdef __cplusplus
+}
+#endif
+

@@ -1,0 +1,459 @@
+/*
+ * File      : usart.c
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2009, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ * 2009-01-05     Bernard      the first version
+ * 2010-03-29     Bernard      remove interrupt Tx and DMA Rx mode
+ * 2012-02-08     aozima       update for F4.
+ * 2012-07-28     aozima       update for ART board.
+ */
+
+#include "stm32f4xx.h"
+#include "usart.h"
+#include "board.h"
+#include "gpio.h"
+
+#include <rtdevice.h>
+
+/* UART GPIO define. */
+#define UART1_GPIO_TX       PA9
+#define UART1_GPIO_RX       PA10
+#define RCC_APBPeriph_UART1 RCC_APB2Periph_USART1
+#define UART1_TX_DMA        DMA1_Channel4
+#define UART1_RX_DMA        DMA1_Channel5
+
+#define UART2_GPIO_TX       PA2
+#define UART2_GPIO_RX       PA3
+#define RCC_APBPeriph_UART2 RCC_APB1Periph_USART2
+#define UART2_TX_DMA        DMA1_Channel4
+#define UART2_RX_DMA        DMA1_Channel5
+
+#define UART3_GPIO_TX       PD8
+#define UART3_GPIO_RX       PD9
+#define RCC_APBPeriph_UART3 RCC_APB1Periph_USART3
+#define UART3_RX_DMA        DMA1_Stream1
+#define UART3_TX_DMA        DMA1_Stream3
+
+#define UART6_GPIO_TX       PC6
+#define UART6_GPIO_RX       PC7
+#define RCC_APBPeriph_UART6 RCC_APB2Periph_USART6
+#define UART6_RX_DMA        DMA2_Stream1
+#define UART6_TX_DMA        DMA2_Stream6
+
+
+
+/* STM32 uart driver */
+struct stm32_uart
+{
+    USART_TypeDef *uart_device;
+    IRQn_Type irq;
+};
+
+// 字符设备驱动控制模块中注册 ops
+static rt_err_t stm32_configure(struct rt_serial_device *serial, struct serial_configure *cfg)
+{
+    struct stm32_uart *uart;
+    USART_InitTypeDef USART_InitStructure;
+
+    RT_ASSERT(serial != RT_NULL);
+    RT_ASSERT(cfg != RT_NULL);
+
+    uart = (struct stm32_uart *)serial->parent.user_data;
+
+    if (cfg->baud_rate == BAUD_RATE_9600)
+        USART_InitStructure.USART_BaudRate = 9600;
+    else if (cfg->baud_rate == BAUD_RATE_115200)
+        USART_InitStructure.USART_BaudRate = 115200;
+
+    if (cfg->data_bits == DATA_BITS_8)
+        USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+
+    if (cfg->stop_bits == STOP_BITS_1)
+        USART_InitStructure.USART_StopBits = USART_StopBits_1;
+    else if (cfg->stop_bits == STOP_BITS_2)
+        USART_InitStructure.USART_StopBits = USART_StopBits_2;
+
+    USART_InitStructure.USART_Parity = USART_Parity_No;
+    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+    USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    USART_Init(uart->uart_device, &USART_InitStructure);
+
+    /* Enable USART */
+    USART_Cmd(uart->uart_device, ENABLE);
+
+    return RT_EOK;
+}
+
+static rt_err_t stm32_control(struct rt_serial_device *serial, int cmd, void *arg)
+{
+    struct stm32_uart *uart;
+
+    RT_ASSERT(serial != RT_NULL);
+    uart = (struct stm32_uart *)serial->parent.user_data;
+
+    switch (cmd)
+    {
+    case RT_DEVICE_CTRL_CLR_INT:
+        /* disable rx irq */
+        UART_DISABLE_IRQ(uart->irq);
+        /* disable interrupt */
+        USART_ITConfig(uart->uart_device, USART_IT_RXNE, DISABLE);
+        break;
+    case RT_DEVICE_CTRL_SET_INT:
+        /* enable rx irq */
+        UART_ENABLE_IRQ(uart->irq);
+        /* enable interrupt */
+        USART_ITConfig(uart->uart_device, USART_IT_RXNE, ENABLE);
+        break;
+    }
+
+    return RT_EOK;
+}
+
+static int stm32_putc(struct rt_serial_device *serial, char c)
+{
+    struct stm32_uart *uart;
+
+    RT_ASSERT(serial != RT_NULL);
+    uart = (struct stm32_uart *)serial->parent.user_data;
+
+    while (!(uart->uart_device->SR & USART_FLAG_TXE));
+    uart->uart_device->DR = c;
+
+    return 1;
+}
+
+static int stm32_getc(struct rt_serial_device *serial)
+{
+    int ch;
+    struct stm32_uart *uart;
+
+    RT_ASSERT(serial != RT_NULL);
+    uart = (struct stm32_uart *)serial->parent.user_data;
+
+    ch = -1;
+    if (uart->uart_device->SR & USART_FLAG_RXNE)
+    {
+        ch = uart->uart_device->DR & 0xff;
+    }
+
+    return ch;
+}
+
+static const struct rt_uart_ops stm32_uart_ops =
+{
+    stm32_configure,
+    stm32_control,
+    stm32_putc,
+    stm32_getc,
+};
+
+#if defined(RT_USING_UART1)
+/* UART1 device driver structure */
+struct stm32_uart uart1 =
+{
+    USART1,
+    USART1_IRQn,
+};
+struct rt_serial_device serial1;
+
+void USART1_IRQHandler(void)
+{
+    struct stm32_uart *uart;
+
+    uart = &uart1;
+
+    /* enter interrupt */
+    rt_interrupt_enter();
+    if (USART_GetITStatus(uart->uart_device, USART_IT_RXNE) != RESET)
+    {
+        rt_hw_serial_isr(&serial1, RT_SERIAL_EVENT_RX_IND);
+    }
+    if (USART_GetITStatus(uart->uart_device, USART_IT_TC) != RESET)
+    {
+        /* clear interrupt */
+        USART_ClearITPendingBit(uart->uart_device, USART_IT_TC);
+    }
+
+    /* leave interrupt */
+    rt_interrupt_leave();
+}
+#endif /* RT_USING_UART1 */
+
+#if defined(RT_USING_UART2)
+/* UART2 device driver structure */
+struct stm32_uart uart2 =
+{
+    USART2,
+    USART2_IRQn,
+};
+struct rt_serial_device serial2;
+
+void USART2_IRQHandler(void)
+{
+    struct stm32_uart *uart;
+
+    uart = &uart2;
+
+    /* enter interrupt */
+    rt_interrupt_enter();
+    if (USART_GetITStatus(uart->uart_device, USART_IT_RXNE) != RESET)
+    {
+        rt_hw_serial_isr(&serial2, RT_SERIAL_EVENT_RX_IND);
+    }
+    if (USART_GetITStatus(uart->uart_device, USART_IT_TC) != RESET)
+    {
+        /* clear interrupt */
+        USART_ClearITPendingBit(uart->uart_device, USART_IT_TC);
+    }
+
+    /* leave interrupt */
+    rt_interrupt_leave();
+}
+#endif /* RT_USING_UART2 */
+
+#if defined(RT_USING_UART3)
+/* UART3 device driver structure */
+struct stm32_uart uart3 =
+{
+    USART3,
+    USART3_IRQn,
+};
+struct rt_serial_device serial3;
+
+void USART3_IRQHandler(void)
+{
+    struct stm32_uart *uart;
+
+    uart = &uart3;
+
+    /* enter interrupt */
+    rt_interrupt_enter();
+    if (USART_GetITStatus(uart->uart_device, USART_IT_RXNE) != RESET)
+    {
+        rt_hw_serial_isr(&serial3, RT_SERIAL_EVENT_RX_IND);
+    }
+    if (USART_GetITStatus(uart->uart_device, USART_IT_TC) != RESET)
+    {
+        /* clear interrupt */
+        USART_ClearITPendingBit(uart->uart_device, USART_IT_TC);
+    }
+
+    /* leave interrupt */
+    rt_interrupt_leave();
+}
+#endif /* RT_USING_UART3 */
+
+
+#if defined(RT_USING_UART6)
+/* UART6 device driver structure */
+struct stm32_uart uart6 =
+{
+    USART6,
+    USART6_IRQn,
+};
+struct rt_serial_device serial6;
+
+void USART6_IRQHandler(void)
+{
+    struct stm32_uart *uart;
+
+    uart = &uart6;
+
+    /* enter interrupt */
+    rt_interrupt_enter();
+    if (USART_GetITStatus(uart->uart_device, USART_IT_RXNE) != RESET)
+    {
+        rt_hw_serial_isr(&serial6, RT_SERIAL_EVENT_RX_IND);
+    }
+    if (USART_GetITStatus(uart->uart_device, USART_IT_TC) != RESET)
+    {
+        /* clear interrupt */
+        USART_ClearITPendingBit(uart->uart_device, USART_IT_TC);
+    }
+
+    /* leave interrupt */
+    rt_interrupt_leave();
+}
+#endif /* RT_USING_UART6 */
+
+
+static void RCC_Configuration(void)
+{
+#ifdef RT_USING_UART1
+    /* Enable UART1 clock */
+    RCC_APB2PeriphClockCmd(RCC_APBPeriph_UART1, ENABLE);
+#endif /* RT_USING_UART1 */
+
+#ifdef RT_USING_UART2
+    /* Enable UART2 clock */
+    RCC_APB1PeriphClockCmd(RCC_APBPeriph_UART2, ENABLE);
+#endif /* RT_USING_UART1 */
+
+#ifdef RT_USING_UART3
+    /* Enable UART3 clock */
+    RCC_APB1PeriphClockCmd(RCC_APBPeriph_UART3, ENABLE);
+#endif /* RT_USING_UART3 */
+	
+#ifdef RT_USING_UART6
+    /* Enable UART6 clock */
+    RCC_APB2PeriphClockCmd(RCC_APBPeriph_UART6, ENABLE);
+#endif /* RT_USING_UART6 */
+}
+
+static void GPIO_Configuration(void)
+{
+#ifdef RT_USING_UART1
+    Set_pinMode(UART1_GPIO_RX,TRANS_PIN_MODE);
+    Set_pinMode(UART1_GPIO_TX,TRANS_PIN_MODE);
+#endif /* RT_USING_UART1 */
+
+#ifdef RT_USING_UART2
+    Set_pinMode(UART2_GPIO_RX,TRANS_PIN_MODE);
+    Set_pinMode(UART2_GPIO_TX,TRANS_PIN_MODE);
+#endif /* RT_USING_UART2 */
+
+#ifdef RT_USING_UART3
+    Set_pinMode(UART3_GPIO_RX,TRANS_PIN_MODE);
+    Set_pinMode(UART3_GPIO_TX,TRANS_PIN_MODE);
+#endif /* RT_USING_UART3 */
+	
+#ifdef RT_USING_UART6
+    Set_pinMode(UART6_GPIO_RX,TRANS_PIN_MODE);
+    Set_pinMode(UART6_GPIO_TX,TRANS_PIN_MODE);
+#endif /* RT_USING_UART6 */
+    
+}
+
+static void NVIC_Configuration(struct stm32_uart *uart)
+{
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    /* Enable the USART Interrupt */
+    NVIC_InitStructure.NVIC_IRQChannel = uart->irq;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    /*
+    #ifdef RT_USING_UART3_DMA
+    // Enable DMA1_Stream3 Interrupt UART3_TX_DMA
+    NVIC_InitStructure.NVIC_IRQChannel = DMA1_Stream3_IRQHandler;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 3;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+    #endif
+    */
+}
+
+/*
+static void DMA_Configuration(void)
+{
+    DMA_InitTypeDef DMA_InitStructure;
+    
+
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_DMA1,ENABLE);          //DMA1 时钟使能
+    
+    DMA_DeInit(UART3_TX_DMA);
+    while (DMA_GetCmdStatus(UART3_TX_DMA) != DISABLE){}               // 等待DMA可配置
+        
+    
+    DMA_InitStructure.DMA_Channel = DMA_Channel_4;                   // 通道选择,通道4
+    DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)(&USART3->DR);                // DMA外设地址
+    DMA_InitStructure.DMA_Memory0BaseAddr = Maddr;                   // DMA存储器0地址
+    DMA_InitStructure.DMA_DIR = DMA_DIR_MemoryToPeripheral;          // 数据方向选择外设到内存
+    DMA_InitStructure.DMA_BufferSize = 1;                            // 数据传输量
+    DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable; // 外设非增量模式
+    DMA_InitStructure.DMA_MemoryInc=DMA_MemoryInc_Enable;            // 内存地址自增不允许
+    DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 外设数据大小
+    DMA_InitStructure.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;         // 内存地址
+    DMA_InitStructure.DMA_Mode=DMA_Mode_Normal;                      // 传输模式
+    DMA_InitStructure.DMA_Priority=DMA_Priority_Medium;              // 传输的优先级为Medium
+    DMA_InitStructure.DMA_FIFOMode = DMA_FIFOMode_Disable;           // DMA FIFO禁止
+    DMA_InitStructure.DMA_FIFOThreshold = DMA_FIFOThreshold_HalfFull;//FIFO 阈值
+    DMA_InitStructure.DMA_MemoryBurst = DMA_MemoryBurst_Single;      // 存储器突发单次传输
+    DMA_InitStructure.DMA_PeripheralBurst = DMA_PeripheralBurst_Single;// 外设突发单次传输
+    DMA_Init(UART3_TX_DMA, &DMA_InitStructure);// 初始化DMA_Stream
+    DMA_Cmd(UART3_TX_DMA,ENABLE);              // 使能DMA传输
+}
+*/
+
+int stm32_hw_usart_init(void)
+{
+    struct stm32_uart *uart;
+    struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT;
+
+    RCC_Configuration();
+    GPIO_Configuration();
+
+#ifdef RT_USING_UART1
+    uart = &uart1;
+
+    serial1.ops    = &stm32_uart_ops;
+    serial1.config = config;
+
+    NVIC_Configuration(&uart1);
+
+    /* register UART1 device */
+    rt_hw_serial_register(&serial1,
+                          "uart1",
+                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX,
+                          uart);
+#endif /* RT_USING_UART1 */
+
+#ifdef RT_USING_UART2
+    uart = &uart2;
+
+    serial2.ops    = &stm32_uart_ops;
+    serial2.config = config;
+
+    NVIC_Configuration(&uart2);
+
+    /* register UART1 device */
+    rt_hw_serial_register(&serial2,
+                          "uart2",
+                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX,
+                          uart);
+#endif /* RT_USING_UART2 */
+
+#ifdef RT_USING_UART3
+    uart = &uart3;
+
+    serial3.ops    = &stm32_uart_ops;
+    serial3.config = config;
+
+    NVIC_Configuration(&uart3);
+
+    /* register UART3 device */
+    rt_hw_serial_register(&serial3,
+                          "uart3",
+                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX,
+                          uart);
+#endif /* RT_USING_UART3 */
+
+#ifdef RT_USING_UART6
+    uart = &uart6;
+
+    serial6.ops    = &stm32_uart_ops;
+    serial6.config = config;
+
+    NVIC_Configuration(&uart6);
+
+    /* register UART6 device */
+    rt_hw_serial_register(&serial6,
+                          "uart6",
+                          RT_DEVICE_FLAG_RDWR | RT_DEVICE_FLAG_INT_RX,
+                          uart);
+#endif /* RT_USING_UART6 */
+
+    return 0;
+}
+INIT_BOARD_EXPORT(stm32_hw_usart_init);

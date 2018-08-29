@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options IsRTTSession="0" IsRTTWithTimeStamp="1" SamplingPeriod="100" Connection="1" SerialNo="0" IP="" TargetDevice="Cortex-M4" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="E:\xd_bgc_t3_optm_diy_rn\Objects\XD_SPRain_BGC.axf" />
+            <DataFile Name="" />
+            <RawFile Name="" />
+            <Scope>
+                <Options TimeResolutionUs="1000000" />
+            </Scope>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="scop_enc_p" Address="0x20000DB4" Type="int" TypeID="12" Size="4" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" YMinSampled="33471" YMaxSampled="34877" YAvgSampled="34711" Offset="4" ShowInGraph="0" YOffset="200" IsAutoConfig="1" YResolution="20000" MaxValue="40000" File="apps\Function\CAN_com.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_enc_r" Address="0x20000DB0" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="11649" YMaxSampled="14062" YAvgSampled="11769" Offset="8" ShowInGraph="0" YOffset="200" IsAutoConfig="1" YResolution="10000" MaxValue="20000" File="apps\Function\CAN_com.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_enc_y" Address="0x20000DB8" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="6722" YMaxSampled="8271" YAvgSampled="7780" Offset="12" ShowInGraph="0" YOffset="200" IsAutoConfig="1" YResolution="5000" MaxValue="10000" File="apps\Function\CAN_com.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_ax_p" Address="0x20001A48" Type="int" TypeID="12" Size="4" GraphColorRed="160" GraphColorGreen="32" GraphColorBlue="240" YMinSampled="-162" YMaxSampled="1243" YAvgSampled="4" Offset="16" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="1000" MaxValue="2000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_ax_r" Address="0x20001A4C" Type="int" TypeID="12" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="-56" YMaxSampled="2355" YAvgSampled="63" Offset="20" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="2000" MaxValue="4000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_ax_y" Address="0x20001A50" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="191" GraphColorBlue="255" YMinSampled="-220" YMaxSampled="1328" YAvgSampled="269" Offset="24" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="1000" MaxValue="2000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>

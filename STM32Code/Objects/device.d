@@ -1,0 +1,9 @@
+.\objects\device.o: rt_thread\src\device.c
+.\objects\device.o: .\rt_thread\include\rtthread.h
+.\objects\device.o: ..\xd_bgc\rtconfig.h
+.\objects\device.o: .\rt_thread\include\rtdebug.h
+.\objects\device.o: .\rt_thread\include\rtdef.h
+.\objects\device.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\device.o: .\rt_thread\include\rtservice.h
+.\objects\device.o: .\rt_thread\include\rtm.h
+.\objects\device.o: .\rt_thread\include\rtthread.h

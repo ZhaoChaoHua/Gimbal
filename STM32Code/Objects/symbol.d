@@ -1,0 +1,13 @@
+.\objects\symbol.o: rt_thread\components\finsh\symbol.c
+.\objects\symbol.o: rt_thread\components\finsh\finsh.h
+.\objects\symbol.o: .\rt_thread\include\rtthread.h
+.\objects\symbol.o: ..\xd_bgc\rtconfig.h
+.\objects\symbol.o: .\rt_thread\include\rtdebug.h
+.\objects\symbol.o: .\rt_thread\include\rtdef.h
+.\objects\symbol.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\symbol.o: .\rt_thread\include\rtservice.h
+.\objects\symbol.o: .\rt_thread\include\rtm.h
+.\objects\symbol.o: .\rt_thread\include\rtthread.h
+.\objects\symbol.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
+.\objects\symbol.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\symbol.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

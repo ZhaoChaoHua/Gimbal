@@ -1,0 +1,16 @@
+.\objects\sdio.o: rt_thread\components\drivers\sdio\sdio.c
+.\objects\sdio.o: .\rt_thread\components\drivers\include\drivers/mmcsd_core.h
+.\objects\sdio.o: .\rt_thread\include\rtthread.h
+.\objects\sdio.o: ..\xd_bgc\rtconfig.h
+.\objects\sdio.o: .\rt_thread\include\rtdebug.h
+.\objects\sdio.o: .\rt_thread\include\rtdef.h
+.\objects\sdio.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\sdio.o: .\rt_thread\include\rtservice.h
+.\objects\sdio.o: .\rt_thread\include\rtm.h
+.\objects\sdio.o: .\rt_thread\include\rtthread.h
+.\objects\sdio.o: .\rt_thread\components\drivers\include\drivers/mmcsd_host.h
+.\objects\sdio.o: .\rt_thread\components\drivers\include\drivers/mmcsd_card.h
+.\objects\sdio.o: .\rt_thread\components\drivers\include\drivers/mmcsd_cmd.h
+.\objects\sdio.o: .\rt_thread\components\drivers\include\drivers/sdio.h
+.\objects\sdio.o: .\rt_thread\components\drivers\include\drivers/sdio_func_ids.h
+.\objects\sdio.o: .\rt_thread\components\drivers\include\drivers/sd.h

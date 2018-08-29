@@ -1,0 +1,335 @@
+/*
+ * File      : application.c
+ * This file is part of RT-Thread RTOS
+ * COPYRIGHT (C) 2006, RT-Thread Development Team
+ *
+ * The license and distribution terms for this file may be
+ * found in the file LICENSE in this distribution or at
+ * http://www.rt-thread.org/license/LICENSE
+ *
+ * Change Logs:
+ * Date           Author       Notes
+ * 2009-01-05     Bernard      the first version
+ * 2014-04-27     Bernard      make code cleanup. 
+ * 2016-03-14     Lavi
+ */
+
+#include <cstdlib>
+#include <memory>
+#include <functional>
+#include "timers.h"
+#include "Gimbal.h"
+#include "thread_config.h"
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include <board.h>
+#include <rtthread.h>
+#include <idle_thread.h>
+#include "e2pfs.h"
+#include "fast_uart.h"
+
+#ifdef RT_USING_DFS
+#include <dfs_init.h>
+#include <dfs_fs.h>
+#include <drivers/mmcsd_core.h>
+#include "stm32f4xx_sd.h"
+#ifdef RT_USING_DFS_ELMFAT
+#include <dfs_elm.h>
+#endif
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
+// timer counter
+static uint32_t tim_count;
+
+static rt_thread_t serial_thread;
+static rt_thread_t attitude_thread;
+static rt_thread_t control_thread;
+static rt_thread_t can_thread;
+
+static rt_thread_t packing_thread;
+static rt_thread_t acc_cal_thread;
+static rt_thread_t direction_thread;
+
+
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+// 事件触发任务列表
+const Scheduler::Task Gimbal::scheduler_tasks[] PROGMEM = {
+//      Name                Event        Rate(Hz)   RunTime(us)
+//------------------------------------------------------------
+    { "attitude",      ATTITUDE_EVENT,    2000,       100},
+    { "control",       CONTROL_EVENT,     1000,       100},
+    { "serial",        SERIAL_EVENT,      50,        100},
+    { "packet",        PACKET_EVENT,      50,         100},
+		{ "acc_cal",       ACC_CAL_EVENT,     10,         100},   
+		{ "direction",     DIRECTION_EVENT,   10,         100},
+};
+
+void time_update_isr()
+{
+    // 2000Hz更新速率
+    tim_count++;
+    gimbal.scheduler_run();
+}
+
+static void main_time_init()
+{
+    SP_Timer3.pause();
+    SP_Timer3.setPriority(0x01);
+    SP_Timer3.setCounterMode(TIM_CounterMode_Up);
+    SP_Timer3.setPeriod(500);
+    SP_Timer3.attachInterrupt(TIMER_UPDATE, time_update_isr);
+    SP_Timer3.refresh();
+    SP_Timer3.resume();
+}
+
+/* --------------------------------线程初始化----------------------------- */
+// Serial process thread
+// thread stack    : 2048
+// thread priority : 0x10
+// thread stick    : 6
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_serial_stack[SERIAL_PROCESS_STACK];
+void rt_entry_thread_serial(void* parameter)
+{
+    rt_uint32_t e;
+    while(!gimbal.exit_serial_thread)
+    {
+        rt_event_recv(gimbal.Sys_event(), SERIAL_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+        gimbal.serial_update(parameter);
+    }
+}
+
+// Serial process thread
+// thread stack    : 2048
+// thread priority : 0x10
+// thread stick    : 6
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_serial_stack[SERIAL_PROCESS_STACK];
+void rt_entry_thread_packing(void* parameter)
+{
+    rt_uint32_t e;
+    while(!gimbal.exit_packing_thread)
+    {
+        rt_event_recv(gimbal.Sys_event(), PACKET_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+        gimbal.packing_update(parameter);
+    }
+}
+
+// Attitude process thread
+// thread stack    : 1024
+// thread priority : 0x04
+// thread stick    : 2
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_attitude_stack[ATTITUDE_PROCESS_STACK];
+void rt_entry_thread_attitude(void* parameter)
+{
+    rt_uint32_t e;
+    while(!gimbal.exit_attitude_thread)
+    {
+        rt_event_recv(gimbal.Sys_event(), ATTITUDE_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+        gimbal.attitude_update(parameter);
+    }
+}
+
+// Control process thread
+// thread stack    : 1024
+// thread priority : 0x04
+// thread stick    : 2
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_control_stack[CONTROL_PROCESS_STACK];
+void rt_entry_thread_control(void* parameter)
+{
+    rt_uint32_t e;
+    while(!gimbal.exit_control_thread)
+    {
+        rt_event_recv(gimbal.Sys_event(), CONTROL_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+        gimbal.control_update(parameter);
+    }
+}
+
+// CAN process thread
+// thread stack    : 1024
+// thread priority : 0x06
+// thread stick    : 4
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_can_stack[CAN_PROCESS_STACK];
+void rt_entry_thread_can(void* parameter)
+{
+	  
+    while(!gimbal.exit_can_thread)
+    {
+        gimbal.can_update(parameter);
+    }
+}
+
+// Direction process thread
+// thread stack    : 1024
+// thread priority : 0x20
+// thread stick    : 4
+//ALIGN(RT_ALIGN_SIZE)
+
+void rt_entry_thread_direction(void* parameter)
+{
+	rt_uint32_t e;
+	while(!gimbal.exit_direction_thread)
+	{
+		rt_event_recv(gimbal.Sys_event(), DIRECTION_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+		gimbal.direction_update(parameter);
+	}
+}
+
+
+// Acc calibrator thread
+void rt_entry_thread_acc_cal(void *parameter)
+{
+	rt_uint32_t e;
+	while( !gimbal.exit_acc_cal_thread)
+	{
+		rt_event_recv(gimbal.Sys_event(), ACC_CAL_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+		gimbal.acc_cal.update();
+	}
+}
+
+
+
+void rt_init_thread_entry(void* parameter)
+{
+    e2pfs_fsinfo();
+	
+		// Fast uart init
+	  fast_uart_init();
+	
+    // Function & parameter init
+    gimbal.setup(&Gimbal::scheduler_tasks[0], ARRAY_SIZE(Gimbal::scheduler_tasks));
+	
+    // serial thread init
+    serial_thread = rt_thread_create("serial",
+                                     rt_entry_thread_serial,
+                                     RT_NULL,
+                                     SERIAL_PROCESS_STACK,
+                                     SERIAL_PROCESS_PRIORITY,
+                                     SERIAL_PROCESS_TICK);
+    if (serial_thread != RT_NULL)
+        rt_thread_startup(serial_thread);
+    // attitude thread init
+    attitude_thread = rt_thread_create("attitude",
+                                       rt_entry_thread_attitude, 
+                                       RT_NULL,
+                                       ATTITUDE_PROCESS_STACK, 
+                                       ATTITUDE_PROCESS_PRIORITY,
+                                       ATTITUDE_PROCESS_TICK);
+    if (attitude_thread != RT_NULL)
+        rt_thread_startup(attitude_thread);
+    // control thread init
+    control_thread = rt_thread_create("control",
+                                      rt_entry_thread_control,
+                                      RT_NULL,
+                                      CONTROL_PROCESS_STACK, 
+                                      CONTROL_PROCESS_PRIORITY, 
+                                      CONTROL_PROCESS_TICK);
+    if (control_thread != RT_NULL)
+        rt_thread_startup(control_thread);
+    // can bus thread init
+    can_thread = rt_thread_create("can",
+                                   rt_entry_thread_can, 
+                                   RT_NULL,
+                                   CAN_PROCESS_STACK, 
+                                   CAN_PROCESS_PRIORITY, 
+                                   CAN_PROCESS_TICK);
+    if (can_thread != RT_NULL)
+        rt_thread_startup(can_thread);
+
+		// Packing thread
+    packing_thread = rt_thread_create("packing",
+                                       rt_entry_thread_packing,
+                                       RT_NULL,
+                                       PACKING_PROCESS_STACK,
+                                       PACKING_PROCESS_PRIORITY,
+                                       PACKING_PROCESS_TICK);
+    if (packing_thread != RT_NULL)
+        rt_thread_startup(packing_thread);
+		
+		acc_cal_thread = rt_thread_create("acc_cal",
+		                                  rt_entry_thread_acc_cal,
+		                                  RT_NULL,
+		                                  ACC_CAL_PROCESS_STACK,
+		                                  ACC_CAL_PROCESS_PRIORITY,
+		                                  ACC_CAL_PROCESS_TICK);
+		if (acc_cal_thread != RT_NULL)
+			rt_thread_startup(acc_cal_thread);
+		
+		// Direction thread
+		direction_thread = rt_thread_create("direction",
+		                                    rt_entry_thread_direction,
+		                                    RT_NULL,
+		                                    DIRECTION_PROCESS_STACK,
+		                                    DIRECTION_PROCESS_PRIORITY,
+		                                    DIRECTION_PROCESS_TICK);
+		if (direction_thread != RT_NULL)
+			rt_thread_startup(direction_thread);
+		
+		
+    main_time_init();
+#ifdef RT_USING_DFS
+	rt_mmcsd_core_init();
+	rt_mmcsd_blk_init();
+	stm32f4xx_sdio_init();
+	rt_thread_delay(RT_TICK_PER_SECOND);
+
+	/* initialize the device file system */
+	dfs_init();
+#ifdef RT_USING_DFS_ELMFAT
+	/* initialize the elm chan FatFS file system*/
+	elm_init();
+	if (dfs_mount("sd0", "/", "elm", 0, 0) == 0)
+	{
+		rt_kprintf("[init]SDCard File System initialized!\n");
+	}
+	else
+	{
+		rt_kprintf("[err]SDCard File System initialzation failed!\n");
+	}
+#endif
+#endif
+    rt_kprintf("->System start\n");
+}
+
+int rt_application_init()
+{
+    rt_thread_t init_thread;
+
+#if (RT_THREAD_PRIORITY_MAX == 32)
+    init_thread = rt_thread_create("init",
+                                   rt_init_thread_entry, RT_NULL,
+                                   2048, 2, 20);
+#else
+    init_thread = rt_thread_create("init",
+                                   rt_init_thread_entry, RT_NULL,
+                                   2048, 20, 20);
+#endif
+    if (init_thread != RT_NULL)
+        rt_thread_startup(init_thread);
+    
+    // 设置空闲线程钩子函数
+    idle_hook_init();
+
+    return 0;
+}
+
+#ifdef __cplusplus
+}
+#endif
+

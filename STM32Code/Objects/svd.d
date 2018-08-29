@@ -1,0 +1,17 @@
+.\objects\svd.o: apps\Function\pinverse\svd.c
+.\objects\svd.o: apps\Function\pinverse\rt_nonfinite.h
+.\objects\svd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\svd.o: apps\Function\pinverse\rtwtypes.h
+.\objects\svd.o: apps\Function\pinverse\pinverse.h
+.\objects\svd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\svd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\svd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\svd.o: apps\Function\pinverse\pinverse_types.h
+.\objects\svd.o: apps\Function\pinverse\svd.h
+.\objects\svd.o: apps\Function\pinverse\xaxpy.h
+.\objects\svd.o: apps\Function\pinverse\xdotc.h
+.\objects\svd.o: apps\Function\pinverse\xnrm2.h
+.\objects\svd.o: apps\Function\pinverse\xscal.h
+.\objects\svd.o: apps\Function\pinverse\xrot.h
+.\objects\svd.o: apps\Function\pinverse\xrotg.h
+.\objects\svd.o: apps\Function\pinverse\xswap.h

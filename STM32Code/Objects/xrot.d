@@ -1,0 +1,10 @@
+.\objects\xrot.o: apps\Function\pinverse\xrot.c
+.\objects\xrot.o: apps\Function\pinverse\rt_nonfinite.h
+.\objects\xrot.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\xrot.o: apps\Function\pinverse\rtwtypes.h
+.\objects\xrot.o: apps\Function\pinverse\pinverse.h
+.\objects\xrot.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\xrot.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\xrot.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\xrot.o: apps\Function\pinverse\pinverse_types.h
+.\objects\xrot.o: apps\Function\pinverse\xrot.h

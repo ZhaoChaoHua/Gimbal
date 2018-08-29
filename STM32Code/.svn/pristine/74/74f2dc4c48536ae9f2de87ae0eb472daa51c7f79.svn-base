@@ -1,0 +1,151 @@
+#ifndef __GIMBAL_H__
+#define __GIMBAL_H__
+ 
+#include <rtthread.h>
+#include "stm32f4xx.h"
+#include "parameter.h"
+#include "AttitudeControl.h"
+#include "Attitude.h"
+#include "accelerometer_calibration.h"
+#include "CAN_com.h"
+#include "serial_com.h"
+#include "time_measure.h"
+#include "bgc_param.h"
+#include "scheduler.h"
+#include "Upper_Control_Interface.h"
+#include "dataBox.h"
+#include "att2mot.h"
+#include "ekf.h"
+
+
+#include "PID4.h"                      // Model's header file
+#include "rtwtypes.h"
+
+#ifdef __cplusplus
+
+class Gimbal
+{
+public:
+	friend class BGC_PARAM;
+  rt_device_t       led;
+	Gimbal(void);
+	void setup(const Scheduler::Task *tasks, uint8_t num_tasks);
+    // thread control parameter
+    bool exit_serial_thread;
+    bool exit_attitude_thread;
+    bool exit_control_thread;
+    bool exit_can_thread;
+    bool exit_packing_thread;
+    bool exit_log_thread;
+    bool exit_acc_cal_thread;
+
+    // serial update
+    void serial_update(void *parameter);
+    // attitude update
+    void attitude_update(void *parameter);
+    // control update
+    void control_update(void *parameter);
+    // can update
+    void can_update(void *parameter);	
+
+
+    // packing update
+    void packing_update(void *parameter);
+		
+				// log update
+		void log_update(void *parameter);
+
+    // get attitude pck from Attitude
+    void generate_attitude_pck(void *parameter);
+    // send an attitude data(Mavlink);
+    void send_attitude_pck(void *parameter);
+    // Get attitude quaternion pck
+    void generate_attitude_quat_pck(void *parameter);
+    // Send an attitude quaternion pck
+    void send_attitude_quat_pck(void *parameter);
+    // Decode msg to pck
+    void mavlink_decode_msg(void *parameter);
+    // Send controller motors realtime data
+    void send_controller_realtime_data(void *parameter);
+		// Generate Motor state data pck
+		void generate_motor_state_data_pck(void *parameter);
+		// Send Motor state data pck
+		void send_motor_state_data(void *parameter);
+		// Generate controller config data pck
+		void generate_controller_config_data_pck(void *parameter);
+		// Send controller config data pck
+		void send_controller_config_data(void *parameter);
+		// Generate motors config data pck
+		void generate_motors_config_data_pck(void *parameter);
+		// Send motors config data pck
+		void send_motors_config_data(void *parameter);
+		// SEND DATA TO COMPUTER 
+		void respond_to_computer(void *parameter);
+		// Mavlink write parameter
+		void mavlink_write_param(void *parameter);
+		// Mavlink read parameter
+		void mavlink_read_param(void *parameter);
+		// Set controller param from mavlink
+		void set_controller_param_from_mavlink(void *parameter);
+    // return sys events
+    rt_event_t Sys_event();
+    // scheduler run
+    void scheduler_run();
+    // gimbal
+    static const Scheduler::Task scheduler_tasks[];
+
+		
+		//Matlab PID Update
+		void matlab_pid_update(void);
+    Accel_Cal          calibration;
+		AccelCalibrator    acc_caltor;
+    AccelCal           acc_cal;
+private:
+	Time_point         time;
+	CAN                can;
+	SerialManager      serial;
+    Madgwick         madgwick;
+    MahonyAHRS       mahony;
+    MPU6500            mpu;
+    BMM150             bmm;
+    MPU6500            mpu1;
+	Attitude           attitude;
+  EKF                ekf;
+    
+	AC_AttitudeControl attitude_control;
+	BGC_PARAM          param;
+    AP_Param           param_loader;
+    Scheduler          scheduler;
+  PID4ModelClass       matlab_pid;
+    Vector3f           axis_angle;
+  Upper_Control_Interface   interface;
+  DataBox              data_box;
+
+  Vector3f            enc_zeros;
+	
+	// Force
+	Vector3f            inertia;
+	Vector3f            angle_acc;
+	Vector3f            torque;
+
+    Mavlink           mavlink;
+    Mavlink_msg_t     mavlink_msg_rx;
+    Mavlink_msg_t     mavlink_msg_tx;
+    Mavlink_attitude_t    attitude_pck;
+    Mavlink_attitude_quaternion_t    attitude_quat_pck;
+    Mavlink_control_param_t  control_param_pck;
+		Mavlink_controller_config_data_t controller_config_data_pck;
+		Mavlink_motors_config_data_t  motors_config_data_pck;
+		Mavlink_motor_state_data_t  motors_state[3];
+		Mavlink_param_t     mavlink_param_rx;
+		Mavlink_decode_info mavlink_decode_info;
+	
+
+	// ²ÎÊý
+	static const AP_Param::Info var_info[];
+};
+
+extern Gimbal gimbal;
+
+#endif
+#endif

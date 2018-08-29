@@ -1,0 +1,122 @@
+#include "CAN_com.h"
+
+static struct can_app_struct can_data; // 线程启动参数
+
+const AP_Param::GroupInfo CAN::var_info[] =
+{ 
+    AP_GROUPINFO("CENTER_P", 0, CAN, center_pitch, 0),
+    
+    AP_GROUPINFO("CENTER_R", 1, CAN, center_roll,  0),
+    
+    AP_GROUPINFO("CENTER_Y", 2, CAN, center_yaw,   0),
+
+    AP_GROUPEND
+};
+
+static rt_err_t can1ind(rt_device_t dev,  void *args, rt_int32_t hdr, rt_size_t size)
+{
+    rt_event_t pevent = (rt_event_t)args;
+    rt_event_send(pevent, 1 << (hdr));
+    return RT_EOK;
+}
+
+struct rt_can_filter_item filter1item[6] = 
+{
+    //                                   f off hdr 自己计算过滤器偏移与HDR编号
+    RT_CAN_FILTER_STD_LIST(BGC_P_ENC,          RT_CAN_FIFO0,0,0,0, can1ind, (void*)&can_data.canevent),
+    RT_CAN_FILTER_STD_LIST(BGC_R_ENC,          RT_CAN_FIFO0,0,1,1, can1ind, (void*)&can_data.canevent),
+    RT_CAN_FILTER_STD_LIST(BGC_Y_ENC,          RT_CAN_FIFO0,0,2,2, can1ind, (void*)&can_data.canevent),
+    //RT_CAN_FILTER_STD_LIST(BGC_P_MOTOR_STATUS, RT_CAN_FIFO0,0,3,3, can1ind, (void*)&can_data.canevent),
+    //RT_CAN_FILTER_STD_LIST(BGC_R_MOTOR_STATUS, RT_CAN_FIFO0,1,0,4, can1ind, (void*)&can_data.canevent),
+    //RT_CAN_FILTER_STD_LIST(BGC_Y_MOTOR_STATUS, RT_CAN_FIFO0,1,1,5, can1ind, (void*)&can_data.canevent),
+};
+
+void CAN::start_init()
+{
+    struct rt_can_filter_config filter1;
+    // can device parameter init
+    filter1.count = 3;
+    filter1.actived=1;
+    filter1.fifobaseoff = 7;  // FIFO1过滤器匹配索引偏移
+    filter1.items = filter1item;
+  
+    can_data.name = "bxcan1";
+    can_data.filter = &filter1;
+    can_data.eventopt = RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR;
+    
+    candev = rt_device_find(can_data.name);    // 查看设备驱动
+    RT_ASSERT(candev);
+    rt_event_init(&can_data.canevent, can_data.name, RT_IPC_FLAG_FIFO);  // 初始化事件
+    rt_device_open(candev, (RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX | RT_DEVICE_FLAG_INT_TX)); // 打开设备、初始化
+    rt_device_control(candev, RT_CAN_CMD_SET_FILTER, can_data.filter); // 设置CAN总线过滤器
+    event_ops = can_data.filter->items;
+}
+
+void CAN::update()
+{
+    // 等待接收事件
+    if (rt_event_recv(&can_data.canevent,
+        ((1 << event_ops[0].hdr)|
+        (1 << event_ops[1].hdr) |
+        (1 << event_ops[2].hdr) |
+        (1 << event_ops[3].hdr) |
+        (1 << event_ops[4].hdr) |
+        (1 << event_ops[5].hdr)),
+        can_data.eventopt,
+        RT_WAITING_FOREVER, &e) != RT_EOK){
+        return;
+    }
+    //Ctrlstruct[0].angle_err = Ctrlstruct[0].angle_err + ahrsData.euler.x;
+    if (e & (1 << event_ops[0].hdr)){
+        rx_msg.hdr = event_ops[0].hdr;
+        while (rt_device_read(candev, 0, &rx_msg, sizeof(rx_msg)) == sizeof(rx_msg)){
+            float angle_p;
+            rt_memcpy(&angle_p,rx_msg.data,sizeof(int));
+            motor_enc.x = angle_p;
+            angle_mov.x = motor_enc.x - center_pitch;
+            angle_mov.x = circadjust(angle_mov.x, 180);
+        }
+    }
+    if (e & (1 << event_ops[1].hdr)){
+        rx_msg.hdr = event_ops[1].hdr;
+        while (rt_device_read(candev, 0, &rx_msg, sizeof(rx_msg)) == sizeof(rx_msg)){
+            float angle_r;
+            rt_memcpy(&angle_r,rx_msg.data,sizeof(int));
+            motor_enc.y = angle_r;
+            angle_mov.y = motor_enc.y - center_roll;
+            angle_mov.y = circadjust(angle_mov.y, 180);
+        }
+    }
+    if (e & (1 << event_ops[2].hdr)){
+        rx_msg.hdr = event_ops[2].hdr;
+        while (rt_device_read(candev, 0, &rx_msg, sizeof(rx_msg)) == sizeof(rx_msg)){
+            float angle_y;
+            rt_memcpy(&angle_y,rx_msg.data,sizeof(int));
+            motor_enc.z = angle_y;
+            angle_mov.z = motor_enc.z - center_yaw;
+            angle_mov.z = circadjust(angle_mov.z, 180);
+        }
+    }
+}
+
+void CAN::set_enc_center(Vector3f center)
+{
+    center_pitch = center.x;
+    center_roll  = center.y;
+    center_yaw   = center.z;
+}
+
+rt_size_t CAN::can_write(struct rt_can_msg msg)
+{
+    return rt_device_write(candev, 0, &msg, sizeof(msg));
+}
+
+void CAN::get_enc(Vector3f &enc)
+{
+    enc = motor_enc;
+}
+
+void CAN::get_enc_mov(Vector3f &mov)
+{
+    mov = angle_mov;
+}

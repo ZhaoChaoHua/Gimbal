@@ -1,0 +1,145 @@
+#include "timers.h"
+
+#define MAX_RELOAD ((1 << 16) - 1)
+
+SPRain_TIMER::SPRain_TIMER(uint8_t timerNum) 
+{
+    if (timerNum > 7) {
+        assert_param(0);
+    }
+    timer_dev *devs[] = {
+        TIMER1,
+        TIMER2,
+        TIMER3,
+        TIMER4,
+        TIMER5,
+        TIMER6,
+        TIMER7,               
+    };
+    this->dev = devs[timerNum - 1];
+	// 开启定时器时钟
+	this->dev->clkcmd(this->dev->clk, ENABLE);
+}
+
+void SPRain_TIMER::setPriority(uint8_t priority)
+{
+    this->dev->priority = priority;
+}
+
+void SPRain_TIMER::pause(void)
+{
+    TIM_Cmd(this->dev->TIMx, DISABLE);
+}
+
+void SPRain_TIMER::resume(void) 
+{
+    TIM_Cmd(this->dev->TIMx, ENABLE);
+}
+
+uint32_t SPRain_TIMER::getPrescaleFactor(void)
+{
+    return timer_get_prescaler(this->dev) + 1;
+}
+
+void SPRain_TIMER::setPrescaleFactor(uint32_t factor, uint16_t TIM_PSCReloadMode)
+{
+	TIM_PrescalerConfig(this->dev->TIMx,(uint16_t)(factor - 1), TIM_PSCReloadMode);
+}
+
+uint32_t SPRain_TIMER::getOverflow()
+{
+    return timer_get_reload(this->dev);
+}
+
+void SPRain_TIMER::setOverflow(uint32_t val)
+{
+    TIM_SetAutoreload(this->dev->TIMx, val);
+}
+
+uint32_t SPRain_TIMER::getCount(void)
+{
+    return TIM_GetCounter(this->dev->TIMx);
+}
+
+void SPRain_TIMER::setCount(uint32_t val) 
+{
+    uint16_t ovf = this->getOverflow();
+    TIM_SetCounter(this->dev->TIMx, min_def(val, ovf));
+}
+
+
+int SPRain_TIMER::setPeriod(uint32_t microseconds)
+{
+    // Not the best way to handle this edge case
+    if (!microseconds) 
+	{
+        this->setPrescaleFactor(1, TIM_PSCReloadMode_Update);
+        this->setOverflow(1);
+        return this->getOverflow();
+    }
+
+	uint32_t period_cyc;
+
+	if (dev->TIMx == TIM1 || dev->TIMx == TIM8 || dev->TIMx == TIM9 || dev->TIMx == TIM10 || dev->TIMx == TIM11)
+	{
+		period_cyc = microseconds * TIMER_PER_MICROSECOND / 1;
+	}
+	else
+	{
+		period_cyc = microseconds * TIMER_PER_MICROSECOND / 2;
+	}
+    
+    int prescaler = (int)(period_cyc / MAX_RELOAD + 1);
+    int overflow  = (int)(round_def((int)(period_cyc / prescaler)));
+    this->setPrescaleFactor(prescaler, TIM_PSCReloadMode_Update);
+    this->setClockDiv(TIM_CKD_DIV1);
+    this->setOverflow(overflow);
+    return overflow;
+}
+
+void SPRain_TIMER::setMode(uint8_t channel, timer_mode mode)
+{
+    timer_set_mode(this->dev, channel, (timer_mode)mode);
+}
+
+uint16_t SPRain_TIMER::getCompare(uint8_t channel)
+{
+    return timer_get_compare(this->dev, channel);
+}
+
+void SPRain_TIMER::setCompare(uint8_t channel, uint16_t val)
+{
+    uint16_t ovf = this->getOverflow();
+    timer_set_compare(this->dev, channel, min_def(val, ovf));
+}
+
+// 普通函数指针
+void SPRain_TIMER::attachInterrupt(uint8_t interrupt, voidFuncPtr handler)
+{
+    timer_attach_interrupt(this->dev, interrupt, handler);
+}
+
+void SPRain_TIMER::detachInterrupt(uint8_t interrupt)
+{
+    timer_detach_interrupt(this->dev, interrupt);
+}
+
+
+void SPRain_TIMER::refresh(void)
+{
+    timer_generate_update(this->dev);
+}
+
+void SPRain_TIMER::setCounterMode(uint16_t TIM_CounterMode)
+{
+    set_count_mode(this->dev, TIM_CounterMode);
+}
+
+void SPRain_TIMER::setClockDiv(uint16_t TIM_CKD)
+{
+    set_clock_division(this->dev, TIM_CKD);
+}
+
+
+/* --------------------类实例化------------------- */
+SPRain_TIMER SP_Timer3(3);

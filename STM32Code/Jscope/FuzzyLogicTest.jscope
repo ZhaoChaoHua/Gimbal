@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options IsRTTSession="0" IsRTTWithTimeStamp="1" SamplingPeriod="100" Connection="1" SerialNo="0" IP="" TargetDevice="Cortex-M4" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="E:\xd_bgc_t3_optm_fuzzy_control\Objects\XD_SPRain_BGC.axf" />
+            <DataFile Name="..\..\..\Matlab\T4\fcdata.csv\" />
+            <RawFile Name="..\..\..\Matlab\T4\fcdata.csv\" />
+            <Scope>
+                <Options TimeResolutionUs="1000000" />
+            </Scope>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="scop_fc_ce" Address="0x20001AA8" Type="int" TypeID="12" Size="4" GraphColorRed="255" GraphColorGreen="215" GraphColorBlue="0" YMinSampled="-309" YMaxSampled="120" YAvgSampled="-167" Offset="4" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="500" MaxValue="1000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_e" Address="0x20001AA4" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="-1000" YMaxSampled="990" YAvgSampled="396" Offset="8" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="500" MaxValue="1000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+            <Symbol>
+                <Options Name="scop_fc_out" Address="0x20001AAC" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="-1512" YMaxSampled="1186" YAvgSampled="94" Offset="12" ShowInGraph="1" YOffset="200" IsAutoConfig="1" YResolution="1000" MaxValue="2000" File="apps\Gimbal.cpp" Scope="0" DrawStyle="0" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>

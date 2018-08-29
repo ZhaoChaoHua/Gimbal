@@ -1,0 +1,4 @@
+IMU:   SPI1
+EEPROM:  I2C2
+Data serial:  uart2
+debug serial: uart1

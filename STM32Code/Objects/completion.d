@@ -1,0 +1,12 @@
+.\objects\completion.o: rt_thread\components\drivers\src\completion.c
+.\objects\completion.o: .\rt_thread\include\rthw.h
+.\objects\completion.o: .\rt_thread\include\rtthread.h
+.\objects\completion.o: ..\xd_bgc\rtconfig.h
+.\objects\completion.o: .\rt_thread\include\rtdebug.h
+.\objects\completion.o: .\rt_thread\include\rtdef.h
+.\objects\completion.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\completion.o: .\rt_thread\include\rtservice.h
+.\objects\completion.o: .\rt_thread\include\rtm.h
+.\objects\completion.o: .\rt_thread\include\rtthread.h
+.\objects\completion.o: .\rt_thread\components\drivers\include\rtdevice.h
+.\objects\completion.o: .\rt_thread\components\drivers\include\drivers/serial.h

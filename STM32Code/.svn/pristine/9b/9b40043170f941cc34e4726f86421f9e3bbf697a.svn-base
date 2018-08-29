@@ -1,0 +1,99 @@
+#ifndef __CAN_H__
+#define __CAN_H__
+
+#include <rthw.h>
+#include <rtthread.h>
+#include <rtdevice.h>
+#include <can.h>
+#include <bxcan.h>
+#include <AP_Math.h>
+#include "parameter.h"
+
+#ifdef __cplusplus
+// 设备号
+#define BGC_NUM                           (0x01 << 8)
+#define BMC_P                             (0x02 << 8)
+#define BMC_R                             (0x03 << 8)
+#define BMC_Y                             (0x04 << 8)
+
+#define BGC_P_ENC                         (BGC_NUM | 0x10)
+#define BGC_R_ENC                         (BGC_NUM | 0x20)
+#define BGC_Y_ENC                         (BGC_NUM | 0x30)
+
+#define BGC_P_POSITION                    (BGC_NUM | 0x01)
+#define BGC_R_POSITION                    (BGC_NUM | 0x02)
+#define BGC_Y_POSITION                    (BGC_NUM | 0x03)
+#define BGC_P_MOTOR_STATUS                (BGC_NUM | 0x04)
+#define BGC_R_MOTOR_STATUS                (BGC_NUM | 0x05)
+#define BGC_Y_MOTOR_STATUS                (BGC_NUM | 0x06)
+
+#define BMC_P_MOTOR_CONTROL               (BMC_P | 0x01)
+#define BMC_P_ENABLE_MOTOR                (BMC_P | 0x02)
+#define BMC_P_MOTOR_DIR                   (BMC_P | 0x03)
+#define BMC_P_MAXPWM                      (BMC_P | 0x04)
+#define BMC_P_MOTOR_MODE                  (BMC_P | 0x05)
+#define BMC_P_SET_DEFAULT                 (BMC_P | 0x06)
+#define BMC_P_INIT_SIN_MATRIX             (BMC_P | 0x07)
+#define BMC_P_SAVE_PARAM                  (BMC_P | 0x08)
+#define BMC_P_TEST_MOTOR                  (BMC_P | 0x09)
+
+#define BMC_R_MOTOR_CONTROL               (BMC_R | 0x01)
+#define BMC_R_ENABLE_MOTOR                (BMC_R | 0x02)
+#define BMC_R_MOTOR_DIR                   (BMC_R | 0x03)
+#define BMC_R_MAXPWM                      (BMC_R | 0x04)
+#define BMC_R_MOTOR_MODE                  (BMC_R | 0x05)
+#define BMC_R_SET_DEFAULT                 (BMC_R | 0x06)
+#define BMC_R_INIT_SIN_MATRIX             (BMC_R | 0x07)
+#define BMC_R_SAVE_PARAM                  (BMC_R | 0x08)
+#define BMC_R_TEST_MOTOR                  (BMC_R | 0x09)
+
+#define BMC_Y_MOTOR_CONTROL               (BMC_Y | 0x01)
+#define BMC_Y_ENABLE_MOTOR                (BMC_Y | 0x02)
+#define BMC_Y_MOTOR_DIR                   (BMC_Y | 0x03)
+#define BMC_Y_MAXPWM                      (BMC_Y | 0x04)
+#define BMC_Y_MOTOR_MODE                  (BMC_Y | 0x05)
+#define BMC_Y_SET_DEFAULT                 (BMC_Y | 0x06)
+#define BMC_Y_INIT_SIN_MATRIX             (BMC_Y | 0x07)
+#define BMC_Y_SAVE_PARAM                  (BMC_Y | 0x08)
+#define BMC_Y_TEST_MOTOR                  (BMC_Y | 0x09)
+
+#define constrain(val,min,max)  ((val)<(min)?(min):((val)>(max)?(max):(val)))
+#define circadjust(val,lim)     ((val)<-(lim)?(val)+2*(lim):((val)>(lim)?(val)-2*(lim):(val)))
+
+// 线程启动设置
+struct can_app_struct
+{
+    const char *name;
+    struct rt_event canevent;
+    struct rt_can_filter_config *filter;
+    rt_uint8_t eventopt;
+};
+
+class CAN
+{
+private:
+    struct rt_can_msg rx_msg;              // 接收数据结构体
+    rt_device_t       candev;              // can总线设备
+    rt_uint32_t       e;
+
+    struct rt_can_filter_item *event_ops;
+
+public:
+    Vector3f           motor_enc;
+    Vector3f           angle_mov;
+    AP_Float           center_pitch;
+    AP_Float           center_roll;
+    AP_Float           center_yaw;
+
+    void start_init();
+    void update();
+    rt_size_t can_write(struct rt_can_msg msg);
+    void set_enc_center(Vector3f center);
+    void get_enc(Vector3f &enc);
+    void get_enc_mov(Vector3f &mov);
+    // user settable parameters
+    static const struct AP_Param::GroupInfo var_info[];
+};
+
+#endif
+#endif

@@ -1,0 +1,17 @@
+.\objects\e2pfs.o: apps\Function\param\e2pfs.c
+.\objects\e2pfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\e2pfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+.\objects\e2pfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\e2pfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\e2pfs.o: .\rt_thread\include\rtthread.h
+.\objects\e2pfs.o: ..\xd_bgc\rtconfig.h
+.\objects\e2pfs.o: .\rt_thread\include\rtdebug.h
+.\objects\e2pfs.o: .\rt_thread\include\rtdef.h
+.\objects\e2pfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\e2pfs.o: .\rt_thread\include\rtservice.h
+.\objects\e2pfs.o: .\rt_thread\include\rtm.h
+.\objects\e2pfs.o: .\rt_thread\include\rtthread.h
+.\objects\e2pfs.o: apps\Function\param\e2pfs.h
+.\objects\e2pfs.o: apps\Function\param\e2pfs_port.h
+.\objects\e2pfs.o: .\rt_thread\components\finsh\finsh.h
+.\objects\e2pfs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h

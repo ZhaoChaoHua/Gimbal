@@ -1,0 +1,10 @@
+.\objects\xswap.o: apps\Function\pinverse\xswap.c
+.\objects\xswap.o: apps\Function\pinverse\rt_nonfinite.h
+.\objects\xswap.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
+.\objects\xswap.o: apps\Function\pinverse\rtwtypes.h
+.\objects\xswap.o: apps\Function\pinverse\pinverse.h
+.\objects\xswap.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\xswap.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\xswap.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\xswap.o: apps\Function\pinverse\pinverse_types.h
+.\objects\xswap.o: apps\Function\pinverse\xswap.h

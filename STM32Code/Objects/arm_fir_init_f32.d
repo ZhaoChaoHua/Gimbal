@@ -1,0 +1,9 @@
+.\objects\arm_fir_init_f32.o: arm_fir_init_f32.c
+.\objects\arm_fir_init_f32.o: .\Libraries\CMSIS\Include\arm_math.h
+.\objects\arm_fir_init_f32.o: .\Libraries\CMSIS\Include\core_cm4.h
+.\objects\arm_fir_init_f32.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\arm_fir_init_f32.o: .\Libraries\CMSIS\Include\core_cmInstr.h
+.\objects\arm_fir_init_f32.o: .\Libraries\CMSIS\Include\core_cmFunc.h
+.\objects\arm_fir_init_f32.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
+.\objects\arm_fir_init_f32.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\arm_fir_init_f32.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h

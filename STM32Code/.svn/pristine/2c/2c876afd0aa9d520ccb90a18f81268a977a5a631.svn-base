@@ -1,0 +1,26 @@
+#include "serial_com.h"
+
+void SerialManager::update()
+{
+	char buf;
+	static uint32_t len;
+	
+	len = rt_device_read(rdevice,0,&buf,1);
+    if(len > 0)
+        len = rt_device_write(wdevice,0,&buf,1);
+}
+
+void SerialManager::start_init()
+{
+	rt_err_t ret = RT_EOK;
+	rdevice = rt_device_find(wd_name);
+	wdevice = rt_device_find(rd_name);
+	
+	/* 设置回调函数并打开设备 */
+    ret = rt_device_open(rdevice,RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX);
+	if(ret != RT_EOK)
+		rt_kprintf("[init]Read Device open fail.\n");
+	ret = rt_device_open(wdevice,RT_DEVICE_OFLAG_RDWR | RT_DEVICE_FLAG_INT_RX);
+	if(ret != RT_EOK)
+		rt_kprintf("[init]Write Device open fail.\n");
+}

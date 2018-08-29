@@ -1,0 +1,12 @@
+.\objects\serial.o: rt_thread\components\drivers\serial\serial.c
+.\objects\serial.o: .\rt_thread\include\rthw.h
+.\objects\serial.o: .\rt_thread\include\rtthread.h
+.\objects\serial.o: ..\xd_bgc\rtconfig.h
+.\objects\serial.o: .\rt_thread\include\rtdebug.h
+.\objects\serial.o: .\rt_thread\include\rtdef.h
+.\objects\serial.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\serial.o: .\rt_thread\include\rtservice.h
+.\objects\serial.o: .\rt_thread\include\rtm.h
+.\objects\serial.o: .\rt_thread\include\rtthread.h
+.\objects\serial.o: .\rt_thread\components\drivers\include\rtdevice.h
+.\objects\serial.o: .\rt_thread\components\drivers\include\drivers/serial.h

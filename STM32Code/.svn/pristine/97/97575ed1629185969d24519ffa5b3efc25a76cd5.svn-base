@@ -1,0 +1,215 @@
+#include "Attitude.h"
+#include "definitions.h"
+#include "kiss_fft.h"
+#include "att2mot.h"
+
+KF kf_gyrox(0.008, 0.04);
+
+void Attitude::start_init()
+{
+		
+		AP_Param *beta;
+		enum ap_var_type beta_type;
+	  float beta_value;
+
+		beta = AP_Param::find("ATT_M_P",&beta_type);
+		beta_value = beta->cast_to_float(beta_type);
+		beta_value = 0.005;
+		AP_Param::set_value(beta_type,beta,&beta_value);
+		beta->save();
+	
+	  calibration_done = false;
+	
+    // MPU6500 init
+    _mpu.mpu_init(0, BITS_DLPF_CFG_20HZ, 0);
+    _mpu.set_acc_scale(BITS_FS_8G);
+    _mpu.set_gyro_scale(BITS_FS_2000DPS);
+    
+    // Gyro Calibration
+	  // New algorithm
+    _mpu.gyroCalibration();
+//		// Old 
+//	  _mpu.gyroOffsetCalibration();
+	
+
+		
+	#ifdef USING_EKF
+	  _ekf.EKF_Init();
+	#endif
+		_acc_cal.cal_done = true;
+
+		
+		rt_thread_delay(2);
+		
+//		kf_gyrox.init();
+		
+//		_mpu1.mpu_init(0, BITS_DLPF_CFG_20HZ, 1);
+//    _mpu1.set_acc_scale(BITS_FS_8G);
+//   
+//    _mpu1.set_gyro_scale(BITS_FS_2000DPS);
+//    
+//    // Gyro Calibration
+//    _mpu1.gyroOffsetCalibration();
+}
+
+int scop_angle_accx, scop_angle_accy, scop_angle_accz;
+int scop_angle_accdt;
+int scop_gyrox_kf, scop_gyrox_lp;
+int scop_gyrox, scop_gyroy, scop_gyroz;
+int scop_mpu_temp;
+
+
+void Attitude::update()
+{
+	  static Vector3f last_gyro;
+	  // time for calculate
+	  static float time = 0;
+	  float time_unit = 0.001;
+	  float time_count = 0.02;  //s
+	  static uint32_t tnow, tPrev;
+	  float dt;
+    uint32_t count;
+	
+    // MPU6500原始数据采集
+    _mpu.read_Data();
+
+//	  Accel_af = _mpu.Acc_correct;
+//    Gyro_af = _mpu.Gyro_rad;
+    Accel_af = _accel_filter.apply(_mpu.Acc_correct);
+    Gyro_af = _gyro_filter.apply(_mpu.Gyro_rad);
+//	  
+//	  scop_gyrox_kf = 5729*kf_gyrox.update(_mpu.Gyro_rad.x);
+//	  scop_gyrox = 5729*_mpu.Gyro_rad.x;
+//	  scop_gyrox_lp = 5729*Gyro_af.x;
+	
+	  // For acc calibration
+	  _acc_caltor.new_sample(_mpu.Acc_ms2, 0);
+		
+    Temp_af = Sliding_Windows_Filter_Temp(_mpu.temp_deg);
+	  
+		scop_mpu_temp = Temp_af * 10;
+		scop_gyrox = 5729 * Gyro_af.x;
+		scop_gyroy = 5729 * Gyro_af.y;
+		scop_gyroz = 5729 * Gyro_af.z;
+    
+    // 姿态解算
+	#ifdef USING_MADGWICK
+    _madgwick.MadgwickUpdate(Gyro_af.x, Gyro_af.y, Gyro_af.z,
+                              Accel_af.x,  Accel_af.y,  Accel_af.z);
+    
+    _madgwick.getEuler(&euler, &euler_rad_raw); 
+		if(!calibration_done) calibration_done = _madgwick.calibration_done;
+	#endif
+	
+	#ifdef USING_MAHONY
+	  _mahony.MahonyAHRSUpdate(Gyro_af.x, Gyro_af.y, Gyro_af.z,
+                              Accel_af.x,  Accel_af.y,  Accel_af.z, err_y);
+		_mahony.request_eular(&euler, &euler_rad);
+	#endif
+	
+	#ifdef USING_EKF
+	  Gyro_af.x *= 57.295779513082320f;
+		Gyro_af.y *= 57.295779513082320f;
+		Gyro_af.z *= 57.295779513082320f;
+		_ekf.PutSensorData(Gyro_af, Accel_af, Mag_af, 0.0f);
+		_ekf.EKF_Predict();
+		_ekf.EKF_Update();
+		_ekf.EKF_Eular(&euler);
+		euler_rad = euler/57.295779513082320f;
+	#endif
+	 
+	euler_rad = euler_rad_raw - euler_rad_zeros;
+
+  // get angle acc
+		tnow = SysTick->VAL;
+    count = (tnow > tPrev)?(SysTick->LOAD + tPrev - tnow) : (tPrev - tnow);
+    dt = count / US_T;
+    dt = dt / 1000000.0f;
+		if(dt >= time_unit)
+		{
+			tPrev=tnow;
+			this->angle_acc = (Gyro_af - last_gyro)/dt;
+			last_gyro = Gyro_af;
+		}
+    if(dt < 0.0001f) dt = 0.00025f;
+
+	  scop_angle_accdt = time * 1000; //ms
+		
+		scop_angle_accx = 57.29f*this->angle_acc.x;
+		scop_angle_accy = 57.29f*this->angle_acc.y;
+		scop_angle_accz = 57.29f*this->angle_acc.z;
+		
+}
+
+Vector3f Attitude::get_angle_acc(void)
+{
+	return this->angle_acc;
+}
+
+void Attitude::get_yawerror(float roll_err, float yaw_err, float angel)
+{
+    rawYawError = -(yaw_err * cosf(angel*DEG_TO_RAD) + roll_err * sinf(angel*DEG_TO_RAD) - euler.z) * DEG_TO_RAD;
+}
+
+Vector3f Attitude::Sliding_Windows_Filter(Vector3f input)
+{
+    Vector3f sum;
+    
+    for(uint8_t i=1;i<FILTER_NUM;i++)
+    {	//FIFO 操作
+        FILTER_FIFO[i-1] = FILTER_FIFO[i];
+    }
+    
+    FILTER_FIFO[FILTER_NUM-1] = input;
+    
+    for(uint8_t i=0;i<FILTER_NUM;i++)
+    {
+        sum.x += FILTER_FIFO[i].x;
+        sum.y += FILTER_FIFO[i].y;
+        sum.z += FILTER_FIFO[i].z;
+    }
+    return sum/FILTER_NUM;
+}
+
+float Attitude::Sliding_Windows_Filter_Temp(float in)
+{
+    float sum;
+    
+    for(uint8_t i=1;i<FILTER_NUM;i++)
+    {	//FIFO 操作
+        FILTER_FIFO_TEMP[i-1] = FILTER_FIFO_TEMP[i];
+    }
+    
+    FILTER_FIFO_TEMP[FILTER_NUM-1] = in;
+    
+    for(uint8_t i=0;i<FILTER_NUM;i++)
+    {
+        sum += FILTER_FIFO_TEMP[i];
+    }
+    return sum/FILTER_NUM;
+}
+
+float Attitude::sin_pitch()
+{
+    return sinf(euler_rad.y);
+}
+float Attitude::cos_pitch()
+{
+    return cosf(euler_rad.y);
+}
+float Attitude::sin_roll()
+{
+    return sinf(euler_rad.x);
+}
+float Attitude::cos_roll()
+{
+    return cosf(euler_rad.x);
+}
+float Attitude::sin_yaw()
+{
+    return sinf(euler_rad.z);
+}
+float Attitude::cos_yaw()
+{
+    return cosf(euler_rad.z);
+}

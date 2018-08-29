@@ -1,0 +1,75 @@
+// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
+
+/// @file	AC_PID.h
+/// @brief	Generic PID algorithm, with EEPROM-backed storage of constants.
+
+#ifndef __AC_PD_H__
+#define __AC_PD_H__
+
+
+#include <stdlib.h>
+#include <math.h>
+#include "parameter.h"
+
+#define AC_PID_FILT_HZ_DEFAULT  20.0f   // default input filter frequency
+#define AC_PID_FILT_HZ_MIN      0.01f   // minimum input filter frequency
+
+/// @class	AC_PID
+/// @brief  PID control class
+class AC_PD {
+public:
+
+    // Constructor for PID
+    AC_PD(float initial_p, float initial_d, float initial_filt_hz, float dt);
+
+    // set_dt - set time step in seconds
+    void        set_dt(float dt);
+
+    // set_input_filter_d - set input to PD controller
+    //  only input to the D portion of the controller is filtered
+    //  this should be called before any other calls to get_p or get_d
+    void        set_input_filter_d(float input);
+
+    // get_pid - get results from pid controller
+    float       get_pd();
+    float       get_p();
+    float       get_d();
+
+    // reset_filter - input filter will be reset to the next value provided to set_input()
+    void        reset_filter();
+
+    /// operator function call for easy initialisation
+    void operator() (float p, float i, float d, float imaxval, float input_filt_hz, float dt );
+
+    // get accessors
+    float       kP() const { return _kp; }
+    float       kD() const { return _kd; }
+    float       filt_hz() const { return _filt_hz; }
+    float       get_filt_alpha() const;
+
+    // set accessors
+    void        kP(const float v) { _kp = v; }
+    void        kD(const float v) { _kd = v; }
+    void        filt_hz(const float v);
+
+    // parameter var table
+    static const struct AP_Param::GroupInfo        var_info[];
+protected:
+
+    // parameters
+    AP_Float        _kp;
+    AP_Float        _kd;
+    AP_Float        _filt_hz;                   // PID Input filter frequency in Hz
+
+    // flags
+    struct ac_pid_flags {
+        bool        _reset_filter : 1;    // true when input filter should be reset during next call to set_input
+    } _flags;
+
+    // internal variables
+    float           _dt;                    // timestep in seconds
+    float           _input;                 // last input for derivative
+    float           _derivative;            // last derivative for low-pass filter
+};
+
+#endif // __AC_PD_H__

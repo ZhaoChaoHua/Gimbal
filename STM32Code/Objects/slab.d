@@ -1,0 +1,10 @@
+.\objects\slab.o: rt_thread\src\slab.c
+.\objects\slab.o: .\rt_thread\include\rthw.h
+.\objects\slab.o: .\rt_thread\include\rtthread.h
+.\objects\slab.o: ..\xd_bgc\rtconfig.h
+.\objects\slab.o: .\rt_thread\include\rtdebug.h
+.\objects\slab.o: .\rt_thread\include\rtdef.h
+.\objects\slab.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\slab.o: .\rt_thread\include\rtservice.h
+.\objects\slab.o: .\rt_thread\include\rtm.h
+.\objects\slab.o: .\rt_thread\include\rtthread.h

@@ -1,0 +1,59 @@
+#include "bgc_param.h"
+#include "Gimbal.h"
+
+// var_info	                         Type	         name          key                     point            group info       value
+//----------------------------------------------------------------------------------------------------------------------------------
+
+#define GINT8(v, name, def)     { AP_PARAM_INT8,     name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         NULL,            def }
+#define GINT16(v, name, def)    { AP_PARAM_INT16,    name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         NULL,            def }
+#define GINT32(v, name, def)    { AP_PARAM_INT32,    name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         NULL,            def }
+#define GFLOAT(v, name, def)    { AP_PARAM_FLOAT,    name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         NULL,            def }
+#define GVECTOR3F(v, name, def) { AP_PARAM_VECTOR3F, name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         NULL,            def }
+#define GVECTOR6F(v, name, def) { AP_PARAM_VECTOR6F, name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         NULL,            def }
+#define GMATRIX3F(v, name, def) { AP_PARAM_MATRIX3F, name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         NULL,            def }
+#define GGROUP(v, name, class)  { AP_PARAM_GROUP,    name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,         class::var_info, NULL }
+#define GOBJECT(v, name, class) { AP_PARAM_GROUP,    name, BGC_PARAM::k_param_ ## v, (const void *)&gimbal.v, class::var_info, NULL }
+
+//#define GSCALAR(v, name, def) { gimbal.param.v.vtype, name, BGC_PARAM::k_param_ ## v, &gimbal.param.v,      NULL,            def }
+const AP_Param::Info Gimbal::var_info[] PROGMEM = {
+
+    // rate pid controller parameter
+    // RATE_PIT_P RATE_PIT_I RATE_PIT_D RATE_PIT_IMAX RATE_PIT_FILT_HZ
+    // RATE_RLL_P RATE_RLL_I RATE_RLL_D RATE_RLL_IMAX RATE_RLL_FILT_HZ
+    // RATE_YAW_P RATE_YAW_I RATE_YAW_D RATE_YAW_IMAX RATE_YAW_FILT_HZ
+    GGROUP(pid_rate_roll,     "RATE_RLL_", AC_PID),
+    GGROUP(pid_rate_pitch,    "RATE_PIT_", AC_PID),
+    GGROUP(pid_rate_yaw,      "RATE_YAW_", AC_PID),
+    
+    // attitude p controller parameter
+    // STB_PIT_P
+    // STB_RLL_P
+    // STB_YAW_P
+    GGROUP(p_stabilize_roll,  "STB_RLL_",  AC_P),
+    GGROUP(p_stabilize_pitch, "STB_PIT_",  AC_P),
+    GGROUP(p_stabilize_yaw,   "STB_YAW_",  AC_P),
+    
+    // attitude parameter
+    // ATC_SLEW_YAW  ATC_ACCEL_Y_MAX  ATC_RATE_FF_ENAB  ATC_ACCEL_R_MAX  ATC_ACCEL_P_MAX
+    GOBJECT(attitude_control, "ATC_", AC_AttitudeControl),
+    
+    // attitude_imu parameter
+    // ATT_M_P  ATT_M_I
+    //GOBJECT(mahony, "ATT_", MahonyAHRS),
+    
+    // can encoder center angle
+    // CAN_CENTER_P  CAN_CENTER_R  CAN_CENTER_Y
+    GOBJECT(can, "CAN_", CAN),
+		
+		// attitude PD controller parameter
+		// STB_ROLL_PD
+		// STB_PITCH_PD
+		// STB_YAW_PD
+		GGROUP(pd_stabilize_roll, "STB_RLL_PD_", AC_PD),
+		GGROUP(pd_stabilize_pitch, "STB_PIT_PD_", AC_PD),
+		GGROUP(pd_stabilize_yaw, "STB_YAW_PD_", AC_PD),
+		 
+		GFLOAT(t1, "T1", 0),
+    
+    AP_VAREND
+};

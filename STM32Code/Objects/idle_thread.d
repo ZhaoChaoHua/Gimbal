@@ -1,0 +1,14 @@
+.\objects\idle_thread.o: driver\idle_thread.c
+.\objects\idle_thread.o: driver\idle_thread.h
+.\objects\idle_thread.o: .\rt_thread\include\rtthread.h
+.\objects\idle_thread.o: ..\xd_bgc\rtconfig.h
+.\objects\idle_thread.o: .\rt_thread\include\rtdebug.h
+.\objects\idle_thread.o: .\rt_thread\include\rtdef.h
+.\objects\idle_thread.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\idle_thread.o: .\rt_thread\include\rtservice.h
+.\objects\idle_thread.o: .\rt_thread\include\rtm.h
+.\objects\idle_thread.o: .\rt_thread\include\rtthread.h
+.\objects\idle_thread.o: .\rt_thread\components\finsh\finsh.h
+.\objects\idle_thread.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
+.\objects\idle_thread.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\idle_thread.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
