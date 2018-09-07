@@ -1,9 +1,9 @@
 .\objects\cpuport.o: rt_thread\libcpu\arm\cortex-m4\cpuport.c
 .\objects\cpuport.o: .\rt_thread\include\rtthread.h
-.\objects\cpuport.o: ..\xd_bgc\rtconfig.h
+.\objects\cpuport.o: ..\STM32Code\rtconfig.h
 .\objects\cpuport.o: .\rt_thread\include\rtdebug.h
 .\objects\cpuport.o: .\rt_thread\include\rtdef.h
-.\objects\cpuport.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\cpuport.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\cpuport.o: .\rt_thread\include\rtservice.h
 .\objects\cpuport.o: .\rt_thread\include\rtm.h
 .\objects\cpuport.o: .\rt_thread\include\rtthread.h

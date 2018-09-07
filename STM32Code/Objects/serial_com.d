@@ -1,10 +1,10 @@
 .\objects\serial_com.o: apps\Function\serial_com.cpp
 .\objects\serial_com.o: apps\Function\serial_com.h
 .\objects\serial_com.o: .\rt_thread\include\rtthread.h
-.\objects\serial_com.o: ..\xd_bgc\rtconfig.h
+.\objects\serial_com.o: ..\STM32Code\rtconfig.h
 .\objects\serial_com.o: .\rt_thread\include\rtdebug.h
 .\objects\serial_com.o: .\rt_thread\include\rtdef.h
-.\objects\serial_com.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\serial_com.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\serial_com.o: .\rt_thread\include\rtservice.h
 .\objects\serial_com.o: .\rt_thread\include\rtm.h
 .\objects\serial_com.o: .\rt_thread\include\rtthread.h
@@ -12,7 +12,7 @@
 .\objects\serial_com.o: .\rt_thread\components\drivers\include\drivers/serial.h
 .\objects\serial_com.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\serial_com.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\serial_com.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\serial_com.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\serial_com.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\serial_com.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\serial_com.o: .\Libraries\CMSIS\Include\core_cm4_simd.h

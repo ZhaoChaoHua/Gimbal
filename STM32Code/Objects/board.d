@@ -1,16 +1,16 @@
 .\objects\board.o: driver\board.c
 .\objects\board.o: .\rt_thread\include\rthw.h
 .\objects\board.o: .\rt_thread\include\rtthread.h
-.\objects\board.o: ..\xd_bgc\rtconfig.h
+.\objects\board.o: ..\STM32Code\rtconfig.h
 .\objects\board.o: .\rt_thread\include\rtdebug.h
 .\objects\board.o: .\rt_thread\include\rtdef.h
-.\objects\board.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\board.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\board.o: .\rt_thread\include\rtservice.h
 .\objects\board.o: .\rt_thread\include\rtm.h
 .\objects\board.o: .\rt_thread\include\rtthread.h
 .\objects\board.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\board.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\board.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\board.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\board.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\board.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\board.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -55,6 +55,6 @@
 .\objects\board.o: .\apps\Driver_Interface\hardward_bus.h
 .\objects\board.o: .\driver\stm32_hw_spi.h
 .\objects\board.o: .\driver\spi.h
-.\objects\board.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\board.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\board.o: driver\bxcan.h
 .\objects\board.o: .\apps\Driver_Interface\fast_uart.h

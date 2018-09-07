@@ -1,10 +1,10 @@
 .\objects\mmc.o: rt_thread\components\drivers\sdio\mmc.c
 .\objects\mmc.o: .\rt_thread\components\drivers\include\drivers/mmcsd_core.h
 .\objects\mmc.o: .\rt_thread\include\rtthread.h
-.\objects\mmc.o: ..\xd_bgc\rtconfig.h
+.\objects\mmc.o: ..\STM32Code\rtconfig.h
 .\objects\mmc.o: .\rt_thread\include\rtdebug.h
 .\objects\mmc.o: .\rt_thread\include\rtdef.h
-.\objects\mmc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\mmc.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\mmc.o: .\rt_thread\include\rtservice.h
 .\objects\mmc.o: .\rt_thread\include\rtm.h
 .\objects\mmc.o: .\rt_thread\include\rtthread.h

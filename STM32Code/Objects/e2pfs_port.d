@@ -3,7 +3,7 @@
 .\objects\e2pfs_port.o: .\driver\eeprom.h
 .\objects\e2pfs_port.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\e2pfs_port.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\e2pfs_port.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\e2pfs_port.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\e2pfs_port.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\e2pfs_port.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\e2pfs_port.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -37,10 +37,10 @@
 .\objects\e2pfs_port.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\objects\e2pfs_port.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
 .\objects\e2pfs_port.o: .\rt_thread\include\rtthread.h
-.\objects\e2pfs_port.o: ..\xd_bgc\rtconfig.h
+.\objects\e2pfs_port.o: ..\STM32Code\rtconfig.h
 .\objects\e2pfs_port.o: .\rt_thread\include\rtdebug.h
 .\objects\e2pfs_port.o: .\rt_thread\include\rtdef.h
-.\objects\e2pfs_port.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\e2pfs_port.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\e2pfs_port.o: .\rt_thread\include\rtservice.h
 .\objects\e2pfs_port.o: .\rt_thread\include\rtm.h
 .\objects\e2pfs_port.o: .\rt_thread\include\rtthread.h

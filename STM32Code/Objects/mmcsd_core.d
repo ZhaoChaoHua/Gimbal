@@ -1,9 +1,9 @@
 .\objects\mmcsd_core.o: rt_thread\components\drivers\sdio\mmcsd_core.c
 .\objects\mmcsd_core.o: .\rt_thread\include\rtthread.h
-.\objects\mmcsd_core.o: ..\xd_bgc\rtconfig.h
+.\objects\mmcsd_core.o: ..\STM32Code\rtconfig.h
 .\objects\mmcsd_core.o: .\rt_thread\include\rtdebug.h
 .\objects\mmcsd_core.o: .\rt_thread\include\rtdef.h
-.\objects\mmcsd_core.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\mmcsd_core.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\mmcsd_core.o: .\rt_thread\include\rtservice.h
 .\objects\mmcsd_core.o: .\rt_thread\include\rtm.h
 .\objects\mmcsd_core.o: .\rt_thread\include\rtthread.h

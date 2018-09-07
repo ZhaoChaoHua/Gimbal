@@ -2,7 +2,7 @@
 .\objects\hardward_bus.o: apps\Driver_Interface\hardward_bus.h
 .\objects\hardward_bus.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\hardward_bus.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\hardward_bus.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\hardward_bus.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\hardward_bus.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\hardward_bus.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\hardward_bus.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -37,15 +37,15 @@
 .\objects\hardward_bus.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
 .\objects\hardward_bus.o: .\driver\stm32_hw_spi.h
 .\objects\hardward_bus.o: .\rt_thread\include\rtthread.h
-.\objects\hardward_bus.o: ..\xd_bgc\rtconfig.h
+.\objects\hardward_bus.o: ..\STM32Code\rtconfig.h
 .\objects\hardward_bus.o: .\rt_thread\include\rtdebug.h
 .\objects\hardward_bus.o: .\rt_thread\include\rtdef.h
-.\objects\hardward_bus.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\hardward_bus.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\hardward_bus.o: .\rt_thread\include\rtservice.h
 .\objects\hardward_bus.o: .\rt_thread\include\rtm.h
 .\objects\hardward_bus.o: .\rt_thread\include\rtthread.h
 .\objects\hardward_bus.o: .\driver\spi.h
-.\objects\hardward_bus.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\hardward_bus.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\hardward_bus.o: .\driver\gpio.h
 .\objects\hardward_bus.o: .\apps\stm32f40x_define.h
 .\objects\hardward_bus.o: .\driver\position_sen.h

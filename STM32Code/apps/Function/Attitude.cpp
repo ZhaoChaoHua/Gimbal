@@ -100,6 +100,7 @@ void Attitude::update()
 		
 	  // For acc calibration
 	  _acc_caltor.new_sample(_mpu.Acc_ms2, 0);
+		
 //    Temp_af = Sliding_Windows_Filter_Temp(_mpu.temp_deg); 
 
 		//Acc compensate
@@ -124,11 +125,11 @@ void Attitude::update()
 
     // ×ËÌ¬½âËã
 	#ifdef USING_MADGWICK
-    _madgwick.MadgwickUpdate(Gyro_af.x, Gyro_af.y, Gyro_af.z,
-                              Accel_af.x,  Accel_af.y,  Accel_af.z);
-    
-    _madgwick.getEuler(&euler, &euler_rad); 
-		if(!calibration_done) calibration_done = _madgwick.calibration_done;
+//    _madgwick.MadgwickUpdate(Gyro_af.x, Gyro_af.y, Gyro_af.z,
+//                              Accel_af.x,  Accel_af.y,  Accel_af.z);
+//    
+//    _madgwick.getEuler(&euler, &euler_rad); 
+		if(!calibration_done) calibration_done = true;//_madgwick.calibration_done;
 	#endif
 	
 	#ifdef USING_MAHONY

@@ -20,6 +20,7 @@
 #include "fuzzy_control.h"
 #include "excitation.h"
 #include "DirectionAlign.h"
+#include "AP_SmallEKF.h"
                   
 #include "rtwtypes.h"
 
@@ -115,6 +116,7 @@ class Gimbal
     MahonyAHRS       mahony;
     Madgwick         madgwick;
     DCM_EKF                ekf;
+	  SmallEKF         small_ekf;
 
 		// New Fuzzy Controller
 		FuzzyController     fc_speed_x;
@@ -132,7 +134,7 @@ class Gimbal
 		Vector3f              Err_camera;
 		Vector3f              Vel_camera;
 		Vector3f              Acc_camera;
-		Quaternion            Drone_quat;
+		Vector3f            Mag_drone;
 		
 		Vector3f              Euler_rad_from_drone;
 
@@ -170,6 +172,10 @@ class Gimbal
 		Vector3f            inertia;
 		Vector3f            angle_acc;
 		Vector3f            torque;
+		
+		Vector3f            delta_angle;
+		Vector3f            delta_vel;
+		float               delta_time;
 	
 		// GIMBAL COMMAND FROM USER
 		int gimbal_user_command;
@@ -201,6 +207,7 @@ class Gimbal
 		void setup(const Scheduler::Task *tasks, uint8_t num_tasks);
     // thread control parameter
     bool exit_serial_thread;
+	  bool exit_sekf_thread;
     bool exit_attitude_thread;
     bool exit_control_thread;
     bool exit_can_thread;
@@ -217,6 +224,8 @@ class Gimbal
     void serial_update(void *parameter);
     // attitude update
     void attitude_update(void *parameter);
+		// Small ekf update
+		void sekf_update(void *parameter);
     // control update
     void control_update(void *parameter);
     // can update

@@ -1,10 +1,10 @@
 .\objects\bxcan.o: driver\bxcan.c
 .\objects\bxcan.o: .\rt_thread\include\rthw.h
 .\objects\bxcan.o: .\rt_thread\include\rtthread.h
-.\objects\bxcan.o: ..\xd_bgc\rtconfig.h
+.\objects\bxcan.o: ..\STM32Code\rtconfig.h
 .\objects\bxcan.o: .\rt_thread\include\rtdebug.h
 .\objects\bxcan.o: .\rt_thread\include\rtdef.h
-.\objects\bxcan.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\bxcan.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\bxcan.o: .\rt_thread\include\rtservice.h
 .\objects\bxcan.o: .\rt_thread\include\rtm.h
 .\objects\bxcan.o: .\rt_thread\include\rtthread.h
@@ -13,7 +13,7 @@
 .\objects\bxcan.o: .\driver\board.h
 .\objects\bxcan.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\bxcan.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\bxcan.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\bxcan.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\bxcan.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\bxcan.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\bxcan.o: .\Libraries\CMSIS\Include\core_cm4_simd.h

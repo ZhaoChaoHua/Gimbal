@@ -1,4 +1,4 @@
---cpu Cortex-M4.fp
+--cpu=Cortex-M4.fp
 ".\objects\attitudecontrol.o"
 ".\objects\pid.o"
 ".\objects\p.o"
@@ -22,6 +22,7 @@
 ".\objects\spr_quat.o"
 ".\objects\dcm_ekf_imu.o"
 ".\objects\notchfilter.o"
+".\objects\ap_smallekf.o"
 ".\objects\crc.o"
 ".\objects\serial_com.o"
 ".\objects\can_com.o"
@@ -159,7 +160,6 @@
 ".\objects\arm_fir_f32.o"
 ".\objects\fir_vec3f.o"
 --strict --scatter ".\Objects\XD_SPRain_BGC.sct"
-
---keep *.o(FSymTab) --keep *.o(VSymTab) --summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--keep *.o(FSymTab) --keep *.o(VSymTab) --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list ".\Listings\XD_SPRain_BGC.map" -o .\Objects\XD_SPRain_BGC.axf

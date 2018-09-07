@@ -21,17 +21,9 @@
 #ifndef AP_SmallEKF
 #define AP_SmallEKF
 
-#include <AP_Math/AP_Math.h>
-#include <AP_InertialSensor/AP_InertialSensor.h>
-#include <AP_Baro/AP_Baro.h>
-#include <AP_Airspeed/AP_Airspeed.h>
-#include <AP_Compass/AP_Compass.h>
-#include <AP_Param/AP_Param.h>
-#include "AP_Nav_Common.h"
-#include <AP_AHRS/AP_AHRS.h>
-#include "AP_NavEKF.h"
-
-#include <AP_Math/vectorN.h>
+#include <AP_Math.h>
+#include "parameter.h"
+#include <rtthread.h>
 
 class SmallEKF
 {
@@ -78,7 +70,7 @@ public:
 #endif
 
     // Constructor
-    SmallEKF(const AP_AHRS_NavEKF &ahrs);
+    SmallEKF();
 
     // Run the EKF main loop once every time we receive sensor data
     void RunEKF(float delta_time, const Vector3f &delta_angles, const Vector3f &delta_velocity, const Vector3f &joint_angles);
@@ -94,12 +86,16 @@ public:
 
     // get filter alignment status - true is aligned
     bool getStatus(void) const;
+		
+		void setMagData(Vector3f mag);
+		
+		void setMeasVelNED(Vector3f vel);
 
     static const struct AP_Param::GroupInfo var_info[];
+		
+		void getEuler(Vector3f *eular, Vector3f *rad);
 
 private:
-    const AP_AHRS_NavEKF &_ahrs;
-    const NavEKF &_main_ekf;
 
     // the states are available in two forms, either as a Vector13 or
     // broken down as individual elements. Both are equivalent (same
@@ -113,7 +109,7 @@ private:
     } &state;
 
     // data from sensors
-    struct {
+    struct gsense_elements{
         Vector3f delAng;
         Vector3f delVel;
         float gPhi;
@@ -136,6 +132,8 @@ private:
     float cosPsi;// = cosf(gSense.gPsi);
     uint32_t lastMagUpdate;
     Vector3f magData;
+		
+		Vector3f measVelNED;
 
     uint32_t imuSampleTime_ms;
     float dtIMU;

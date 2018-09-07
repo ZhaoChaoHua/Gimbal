@@ -1,9 +1,9 @@
 .\objects\portal.o: rt_thread\components\drivers\src\portal.c
 .\objects\portal.o: .\rt_thread\include\rtthread.h
-.\objects\portal.o: ..\xd_bgc\rtconfig.h
+.\objects\portal.o: ..\STM32Code\rtconfig.h
 .\objects\portal.o: .\rt_thread\include\rtdebug.h
 .\objects\portal.o: .\rt_thread\include\rtdef.h
-.\objects\portal.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\portal.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\portal.o: .\rt_thread\include\rtservice.h
 .\objects\portal.o: .\rt_thread\include\rtm.h
 .\objects\portal.o: .\rt_thread\include\rtthread.h

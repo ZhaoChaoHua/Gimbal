@@ -1,9 +1,9 @@
 .\objects\dataqueue.o: rt_thread\components\drivers\src\dataqueue.c
 .\objects\dataqueue.o: .\rt_thread\include\rtthread.h
-.\objects\dataqueue.o: ..\xd_bgc\rtconfig.h
+.\objects\dataqueue.o: ..\STM32Code\rtconfig.h
 .\objects\dataqueue.o: .\rt_thread\include\rtdebug.h
 .\objects\dataqueue.o: .\rt_thread\include\rtdef.h
-.\objects\dataqueue.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\dataqueue.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\dataqueue.o: .\rt_thread\include\rtservice.h
 .\objects\dataqueue.o: .\rt_thread\include\rtm.h
 .\objects\dataqueue.o: .\rt_thread\include\rtthread.h

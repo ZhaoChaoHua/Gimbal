@@ -1,9 +1,9 @@
 .\objects\object.o: rt_thread\src\object.c
 .\objects\object.o: .\rt_thread\include\rtthread.h
-.\objects\object.o: ..\xd_bgc\rtconfig.h
+.\objects\object.o: ..\STM32Code\rtconfig.h
 .\objects\object.o: .\rt_thread\include\rtdebug.h
 .\objects\object.o: .\rt_thread\include\rtdef.h
-.\objects\object.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\object.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\object.o: .\rt_thread\include\rtservice.h
 .\objects\object.o: .\rt_thread\include\rtm.h
 .\objects\object.o: .\rt_thread\include\rtthread.h

@@ -1,9 +1,9 @@
 .\objects\stm32f4xx_sd.o: apps\Driver_Interface\stm32f4xx_sd.c
 .\objects\stm32f4xx_sd.o: .\rt_thread\include\rtthread.h
-.\objects\stm32f4xx_sd.o: ..\xd_bgc\rtconfig.h
+.\objects\stm32f4xx_sd.o: ..\STM32Code\rtconfig.h
 .\objects\stm32f4xx_sd.o: .\rt_thread\include\rtdebug.h
 .\objects\stm32f4xx_sd.o: .\rt_thread\include\rtdef.h
-.\objects\stm32f4xx_sd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\stm32f4xx_sd.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\stm32f4xx_sd.o: .\rt_thread\include\rtservice.h
 .\objects\stm32f4xx_sd.o: .\rt_thread\include\rtm.h
 .\objects\stm32f4xx_sd.o: .\rt_thread\include\rtthread.h
@@ -18,7 +18,7 @@
 .\objects\stm32f4xx_sd.o: .\driver\board.h
 .\objects\stm32f4xx_sd.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\stm32f4xx_sd.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\stm32f4xx_sd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\stm32f4xx_sd.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\stm32f4xx_sd.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\stm32f4xx_sd.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\stm32f4xx_sd.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -51,4 +51,4 @@
 .\objects\stm32f4xx_sd.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_usart.h
 .\objects\stm32f4xx_sd.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\objects\stm32f4xx_sd.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
-.\objects\stm32f4xx_sd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\stm32f4xx_sd.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

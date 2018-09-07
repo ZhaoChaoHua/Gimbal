@@ -1,54 +1,46 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
-
-#include <AP_HAL/AP_HAL.h>
-
-#if HAL_CPU_CLASS >= HAL_CPU_CLASS_150
-
-// uncomment this to force the optimisation of this code, note that
-// this makes debugging harder
-#if CONFIG_HAL_BOARD == HAL_BOARD_SITL || CONFIG_HAL_BOARD == HAL_BOARD_LINUX
-#pragma GCC optimize("O0")
-#else
-#pragma GCC optimize("O3")
-#endif
-
 #include "AP_SmallEKF.h"
-#include <AP_AHRS/AP_AHRS.h>
-#include <AP_Param/AP_Param.h>
-#include <AP_Vehicle/AP_Vehicle.h>
-
 #include <stdio.h>
 
-extern const AP_HAL::HAL& hal;
 
 
+float sqf(float v)
+{
+	return v*v;
+};
 // Define tuning parameters
 const AP_Param::GroupInfo SmallEKF::var_info[] PROGMEM = {
     AP_GROUPEND
 };
 
 // constructor
-SmallEKF::SmallEKF(const AP_AHRS_NavEKF &ahrs) :
-    _ahrs(ahrs),
-    _main_ekf(ahrs.get_NavEKF_const()),
+SmallEKF::SmallEKF() :
     states(),
     state(*reinterpret_cast<struct state_elements *>(&states)),
-    gSense{},
-    Cov{},
     TiltCorrection(0),
     StartTime_ms(0),
     FiltInit(false),
     lastMagUpdate(0),
     dtIMU(0)
 {
-    AP_Param::setup_object_defaults(this, var_info);
+	
+	memset(&gSense, 0, sizeof(gSense));
+  memset(Cov, 0, sizeof(Cov));
+
 }
 
 // run a 9-state EKF used to calculate orientation
 void SmallEKF::RunEKF(float delta_time, const Vector3f &delta_angles, const Vector3f &delta_velocity, const Vector3f &joint_angles)
 {
-    imuSampleTime_ms = hal.scheduler->millis();
+//	tnow = SysTick->VAL;
+//    count = (tnow > tPrev)?(SysTick->LOAD + tPrev - tnow) : (tPrev - tnow);
+//    dt = count / US_T;
+//    dt = dt / 1000000.0f;
+	
+    imuSampleTime_ms = SysTick->VAL;
     dtIMU = delta_time;
+	
+	  static int wait_time = 0;
 
     // initialise variables and constants
     if (!FiltInit) {
@@ -59,11 +51,11 @@ void SmallEKF::RunEKF(float delta_time, const Vector3f &delta_angles, const Vect
         const float Sigma_velNED = 0.5f; // 1 sigma uncertainty in horizontal velocity components
         const float Sigma_dAngBias  = 0.01745f*dtIMU; // 1 Sigma uncertainty in delta angle bias
         const float Sigma_angErr = 1.0f; // 1 Sigma uncertainty in angular misalignment (rad)
-        for (uint8_t i=0; i <= 2; i++) Cov[i][i] = sq(Sigma_angErr);
-        for (uint8_t i=3; i <= 5; i++) Cov[i][i] = sq(Sigma_velNED);
-        for (uint8_t i=6; i <= 8; i++) Cov[i][i] = sq(Sigma_dAngBias);
+        for (uint8_t i=0; i <= 2; i++) Cov[i][i] = sqf(Sigma_angErr);
+        for (uint8_t i=3; i <= 5; i++) Cov[i][i] = sqf(Sigma_velNED);
+        for (uint8_t i=6; i <= 8; i++) Cov[i][i] = sqf(Sigma_dAngBias);
         FiltInit = true;
-        hal.console->printf("\nSmallEKF Alignment Started\n");
+        rt_kprintf("\nSmallEKF Alignment Started\n");
     }
 
     // We are using IMU data and joint angles from the gimbal
@@ -86,25 +78,28 @@ void SmallEKF::RunEKF(float delta_time, const Vector3f &delta_angles, const Vect
     predictCovariance();
 
     // fuse SmallEKF velocity data
-    fuseVelocity(YawAligned);
+//	fuseVelocity(YawAligned);
 
     
     // Align the heading once there has been enough time for the filter to settle and the tilt corrections have dropped below a threshold
     // Force it to align if too much time has lapsed
-    if (((((imuSampleTime_ms - StartTime_ms) > 25000 && TiltCorrection < 1e-4f) || (imuSampleTime_ms - StartTime_ms) > 30000)) && !YawAligned) {
+		wait_time++;
+		int wait_time_ms;
+		wait_time_ms = wait_time * 2;
+    if ((((wait_time_ms > 25000 && TiltCorrection < 1e-4f) || wait_time_ms > 30000)) && !YawAligned) {
         //calculate the initial heading using magnetometer, estimated tilt and declination
         alignHeading();
         YawAligned = true;
-        hal.console->printf("\nSmallEKF Alignment Completed\n");
+        rt_kprintf("\nSmallEKF Alignment Completed\n");
     }
 
     // Fuse magnetometer data if  we have new measurements and an aligned heading
     
-    readMagData();
-    if (newDataMag && YawAligned) {
-        fuseCompass();
-        newDataMag = false;
-    }
+//    readMagData();
+//    if (newDataMag && YawAligned) {
+//        fuseCompass();
+//        newDataMag = false;
+//    }
     
 }
 
@@ -115,7 +110,7 @@ void SmallEKF::predictStates()
     static Vector3f gimDelAngPrev;
 
     // NED gravity vector m/s^2
-    const Vector3f gravityNED(0, 0, GRAVITY_MSS);
+    const Vector3f gravityNED(0, 0, 9.81);
 
     // apply corrections for bias and coning errors
     // % * - and + operators have been overloaded
@@ -164,15 +159,15 @@ void SmallEKF::predictStates()
 // gyro_bias_state_noise
 void SmallEKF::predictCovariance()
 {
-    float delAngBiasVariance = sq(dtIMU*dtIMU*5E-4f);
+    float delAngBiasVariance = sqf(dtIMU*dtIMU*5E-4f);
 
-    float daxNoise = sq(dtIMU*0.0087f);
-    float dayNoise = sq(dtIMU*0.0087f);
-    float dazNoise = sq(dtIMU*0.0087f);
+    float daxNoise = sqf(dtIMU*0.0087f);
+    float dayNoise = sqf(dtIMU*0.0087f);
+    float dazNoise = sqf(dtIMU*0.0087f);
 
-    float dvxNoise = sq(dtIMU*0.5f);
-    float dvyNoise = sq(dtIMU*0.5f);
-    float dvzNoise = sq(dtIMU*0.5f);
+    float dvxNoise = sqf(dtIMU*0.5f);
+    float dvyNoise = sqf(dtIMU*0.5f);
+    float dvzNoise = sqf(dtIMU*0.5f);
     float dvx = gSense.delVel.x;
     float dvy = gSense.delVel.y;
     float dvz = gSense.delVel.z;
@@ -220,10 +215,10 @@ void SmallEKF::predictCovariance()
     float t1396 = q0*t1395*2.0f;
     float t1403 = q3*t1390*2.0f;
     float t1397 = t1392+t1394+t1396-t1403;
-    float t1398 = sq(q0);
-    float t1399 = sq(q1);
-    float t1400 = sq(q2);
-    float t1401 = sq(q3);
+    float t1398 = sqf(q0);
+    float t1399 = sqf(q1);
+    float t1400 = sqf(q2);
+    float t1401 = sqf(q3);
     float t1402 = t1398+t1399+t1400+t1401;
     float t1404 = t1374+t1375-t1376+t1387;
     float t1405 = t1377-t1378+t1379+t1386;
@@ -315,7 +310,7 @@ void SmallEKF::predictCovariance()
     float t1498 = Cov[1][2]*t1468;
     float t1499 = Cov[2][2]*t1472;
     float t1484 = t1482+t1483-t1498-t1499;
-    float t1485 = sq(t1402);
+    float t1485 = sqf(t1402);
     float t1488 = q1*t1390*2.0f;
     float t1489 = q2*t1395*2.0f;
     float t1490 = q3*t1393*2.0f;
@@ -483,7 +478,7 @@ void SmallEKF::predictCovariance()
     nextCov[0][3] = Cov[0][3]*t1397+Cov[1][3]*t1411-Cov[2][3]*t1419-Cov[6][3]*t1402-t1432*t1506+t1510*(t1422+t1423-t1429-t1430)-t1559*(t1425+t1426-t1434-t1435);
     nextCov[1][3] = -Cov[0][3]*t1464-Cov[7][3]*t1402+Cov[1][3]*t1468+Cov[2][3]*t1472-t1478*t1510+t1484*t1506+t1481*t1559;
     nextCov[2][3] = -Cov[8][3]*t1402+Cov[0][3]*t1491-Cov[1][3]*t1497+Cov[2][3]*t1503-t1510*t1538+t1506*t1544+t1541*t1559;
-    nextCov[3][3] = Cov[3][3]+Cov[0][3]*t1510-Cov[2][3]*t1506+Cov[1][3]*t1573-t1506*t1566+t1510*t1575+t1573*t1577+dvxNoise*sq(t1433)+dvyNoise*sq(t1440)+dvzNoise*sq(t1438);
+    nextCov[3][3] = Cov[3][3]+Cov[0][3]*t1510-Cov[2][3]*t1506+Cov[1][3]*t1573-t1506*t1566+t1510*t1575+t1573*t1577+dvxNoise*sqf(t1433)+dvyNoise*sqf(t1440)+dvzNoise*sqf(t1438);
     nextCov[4][3] = Cov[4][3]+t1595-Cov[0][3]*t1515+Cov[1][3]*t1518+Cov[2][3]*t1512+t1510*t1585-t1506*t1591+t1573*t1588-dvyNoise*t1440*t1444-dvzNoise*t1438*t1446;
     nextCov[5][3] = Cov[5][3]+t1617+Cov[0][3]*t1523-Cov[1][3]*t1521+Cov[2][3]*t1526+t1510*t1607-t1506*t1613+t1573*t1610-dvxNoise*t1433*t1451-dvyNoise*t1440*t1450;
     nextCov[6][3] = Cov[6][3]-Cov[6][2]*t1506+Cov[6][0]*t1510+Cov[6][1]*t1573;
@@ -493,7 +488,7 @@ void SmallEKF::predictCovariance()
     nextCov[1][4] = -Cov[0][4]*t1464-Cov[7][4]*t1402+Cov[1][4]*t1468+Cov[2][4]*t1472+t1478*t1515-t1484*t1512-t1481*t1518;
     nextCov[2][4] = -Cov[8][4]*t1402+Cov[0][4]*t1491-Cov[1][4]*t1497+Cov[2][4]*t1503+t1515*t1538-t1512*t1544-t1518*t1541;
     nextCov[3][4] = Cov[3][4]+t1595+Cov[0][4]*t1510-Cov[2][4]*t1506+Cov[1][4]*t1573-t1515*t1575+t1512*t1579+t1518*t1577-dvyNoise*t1440*t1444-dvzNoise*t1438*t1446;
-    nextCov[4][4] = Cov[4][4]-Cov[0][4]*t1515+Cov[1][4]*t1518+Cov[2][4]*t1512-t1515*t1585+t1512*t1591+t1518*t1588+dvxNoise*sq(t1447)+dvyNoise*sq(t1444)+dvzNoise*sq(t1446);
+    nextCov[4][4] = Cov[4][4]-Cov[0][4]*t1515+Cov[1][4]*t1518+Cov[2][4]*t1512-t1515*t1585+t1512*t1591+t1518*t1588+dvxNoise*sqf(t1447)+dvyNoise*sqf(t1444)+dvzNoise*sqf(t1446);
     nextCov[5][4] = Cov[5][4]+t1618+Cov[0][4]*t1523-Cov[1][4]*t1521+Cov[2][4]*t1526-t1515*t1607+t1512*t1613+t1518*t1610-dvxNoise*t1447*t1451-dvzNoise*t1446*t1448;
     nextCov[6][4] = Cov[6][4]+Cov[6][2]*t1512-Cov[6][0]*t1515+Cov[6][1]*t1518;
     nextCov[7][4] = Cov[7][4]+Cov[7][2]*t1512-Cov[7][0]*t1515+Cov[7][1]*t1518;
@@ -503,7 +498,7 @@ void SmallEKF::predictCovariance()
     nextCov[2][5] = -Cov[8][5]*t1402+Cov[0][5]*t1491-Cov[1][5]*t1497+Cov[2][5]*t1503-t1523*t1538+t1521*t1541-t1526*t1544;
     nextCov[3][5] = Cov[3][5]+t1617+Cov[0][5]*t1510-Cov[2][5]*t1506+Cov[1][5]*t1573-t1521*t1577+t1523*t1575+t1526*t1579-dvxNoise*t1433*t1451-dvyNoise*t1440*t1450;
     nextCov[4][5] = Cov[4][5]+t1618-Cov[0][5]*t1515+Cov[1][5]*t1518+Cov[2][5]*t1512+t1523*t1585-t1521*t1588+t1526*t1591-dvxNoise*t1447*t1451-dvzNoise*t1446*t1448;
-    nextCov[5][5] = Cov[5][5]+Cov[0][5]*t1523-Cov[1][5]*t1521+Cov[2][5]*t1526+t1523*t1607-t1521*t1610+t1526*t1613+dvxNoise*sq(t1451)+dvyNoise*sq(t1450)+dvzNoise*sq(t1448);
+    nextCov[5][5] = Cov[5][5]+Cov[0][5]*t1523-Cov[1][5]*t1521+Cov[2][5]*t1526+t1523*t1607-t1521*t1610+t1526*t1613+dvxNoise*sqf(t1451)+dvyNoise*sqf(t1450)+dvzNoise*sqf(t1448);
     nextCov[6][5] = Cov[6][5]-Cov[6][1]*t1521+Cov[6][0]*t1523+Cov[6][2]*t1526;
     nextCov[7][5] = Cov[7][5]-Cov[7][1]*t1521+Cov[7][0]*t1523+Cov[7][2]*t1526;
     nextCov[8][5] = Cov[8][5]-Cov[8][1]*t1521+Cov[8][0]*t1523+Cov[8][2]*t1526;
@@ -559,6 +554,11 @@ void SmallEKF::predictCovariance()
 
 }
 
+void SmallEKF::setMeasVelNED(Vector3f vel)
+{
+	measVelNED = vel;
+}
+
 // Fuse the SmallEKF velocity estimates - this enables alevel reference to be maintained during constant turns
 void SmallEKF::fuseVelocity(bool yawInit)
 {
@@ -575,8 +575,6 @@ void SmallEKF::fuseVelocity(bool yawInit)
         // Calculate the velocity measurement innovation using the SmallEKF estimate as the observation
         // if heading isn't aligned, use zero velocity (static assumption)
         if (yawInit) {
-            Vector3f measVelNED;
-            _main_ekf.getVelNED(measVelNED);
             innovation[obsIndex] = state.velocity[obsIndex] - measVelNED[obsIndex];
         } else {
             innovation[obsIndex] = state.velocity[obsIndex];
@@ -627,27 +625,24 @@ void SmallEKF::fuseVelocity(bool yawInit)
     }
 
     // calculate tilt component of angle correction
-    TiltCorrection = sqrtf(sq(angErrVec.x) + sq(angErrVec.y));
+    TiltCorrection = sqrtf(sqf(angErrVec.x) + sqf(angErrVec.y));
 }
 
 // check for new magnetometer data and update store measurements if available
 void SmallEKF::readMagData()
 {
-    if (_ahrs.get_compass() && 
-        _ahrs.get_compass()->use_for_yaw() && 
-        _ahrs.get_compass()->last_update_usec() != lastMagUpdate) {
-        // store time of last measurement update
-        lastMagUpdate = _ahrs.get_compass()->last_update_usec();
-
-        // read compass data and scale to improve numerical conditioning
-        magData = _ahrs.get_compass()->get_field();
-
-        // let other processes know that new compass data has arrived
-        newDataMag = true;
+    if (newDataMag) {
+        newDataMag = false;
 
     } else {
         newDataMag = false;
     }
+}
+
+void SmallEKF::setMagData(Vector3f mag)
+{
+	magData = mag;
+	newDataMag = true;
 }
 
 // Fuse compass measurements from autopilot
@@ -665,10 +660,10 @@ void SmallEKF::fuseCompass()
     const float R_MAG = 3e-2f;
 
     // Calculate observation Jacobian
-    float t5695 = sq(q0);
-    float t5696 = sq(q1);
-    float t5697 = sq(q2);
-    float t5698 = sq(q3);
+    float t5695 = sqf(q0);
+    float t5696 = sqf(q1);
+    float t5697 = sqf(q2);
+    float t5698 = sqf(q3);
     float t5699 = t5695+t5696-t5697-t5698;
     float t5702 = q0*q2*2.0f;
     float t5703 = q1*q3*2.0f;
@@ -728,9 +723,9 @@ void SmallEKF::fuseCompass()
     float t5758 = t5747-t5752+t5757;
     float t5759 = t5742*t5758;
     float t5723 = tanf(t5759);
-    float t5760 = sq(t5723);
+    float t5760 = sqf(t5723);
     float t5761 = t5760+1.0f;
-    float t5762 = 1.0f/sq(t5741);
+    float t5762 = 1.0f/sqf(t5741);
     float H_MAG[3];
     H_MAG[0] = -t5761*(t5742*(magZ*(sinPhi*t5715+cosPhi*cosTheta*t5716)+magY*(t5713*t5716+cosPhi*cosPsi*t5715)+magX*(t5716*t5719-cosPhi*sinPsi*t5715))-t5758*t5762*(magZ*(sinPhi*t5704+cosPhi*cosTheta*t5706)+magY*(t5706*t5713+cosPhi*cosPsi*t5704)+magX*(t5706*t5719-cosPhi*sinPsi*t5704)));
     H_MAG[1] =  t5761*(t5742*(magZ*(cosPhi*cosTheta*t5711-cosPhi*sinTheta*t5715)+magY*(t5711*t5713+t5710*t5715)+magX*(t5711*t5719+t5715*t5722))+t5758*t5762*(magZ*(cosPhi*cosTheta*t5699+cosPhi*sinTheta*t5704)+magY*(t5699*t5713-t5704*t5710)+magX*(t5699*t5719-t5704*t5722)));
@@ -856,15 +851,15 @@ float SmallEKF::calcMagHeadingInnov()
     // get earth magnetic field estimate from main ekf if available to take advantage of main ekf magnetic field learning
     Vector3f body_magfield, earth_magfield;
     float declination;
-    if (_main_ekf.healthy()) {
-        _main_ekf.getMagNED(earth_magfield);
-        _main_ekf.getMagXYZ(body_magfield);
-        declination = atan2f(earth_magfield.y,earth_magfield.x);
-    } else {
-        body_magfield.zero();
-        earth_magfield.zero();
-        declination = _ahrs.get_compass()->get_declination();
-    }
+//    if (_main_ekf.healthy()) {
+//        _main_ekf.getMagNED(earth_magfield);
+//        _main_ekf.getMagXYZ(body_magfield);
+//        declination = atan2f(earth_magfield.y,earth_magfield.x);
+//    } else {
+//        body_magfield.zero();
+//        earth_magfield.zero();
+//        declination = _ahrs.get_compass()->get_declination();
+//    }
 
     // Define rotation from magnetometer to NED axes
     Matrix3f Tmn = Tsn*Tms;
@@ -936,8 +931,35 @@ void SmallEKF::getQuat(Quaternion &quat) const
 // get filter status - true is aligned
 bool SmallEKF::getStatus() const
 {
-    float run_time = hal.scheduler->millis() - StartTime_ms;
-    return  YawAligned && (run_time > 30000);
+//    float run_time = hal.scheduler->millis() - StartTime_ms;
+//    return  YawAligned && (run_time > 30000);
 }
 
-#endif // HAL_CPU_CLASS
+void SmallEKF::getEuler(Vector3f *eular, Vector3f *rad)
+{   
+	float w, x, y, z;
+	w = state.quat.q1;
+	x = -state.quat.q2;
+	y = -state.quat.q3;
+	z = -state.quat.q4;
+	
+
+//	rad->x = atan2f(2*(q2*q3+q0*q1), (q0*q0-q1*q1-q2*q2+q3*q3));
+//	rad->y = asinf(-2*(q1*q3-q0*q2));
+//	rad->z = atan2f(2*(q1*q2+q0*q3), (q0*q0+q1*q1-q2*q2-q3*q3));
+	
+	// ROT(Z,X,Y) rotation frame
+	rad->x = asinf(2*(y*z-w*x));
+	rad->y = atan2f(-2*(x*z+w*y), 2*w*w-1+2*z*z);
+	rad->z = atan2f(-2*(x*y+w*z), 2*w*w-1+2*y*y);
+	
+//	// ROT(Z,X,Y) fix frame
+//	rad->x = asinf(-2*(y*z+w*x));
+//	rad->y = atan2f(2*(x*z-w*y), 2*w*w-1+2*z*z);
+//	rad->z = atan2f(2*(x*y-w*z), 2*w*w-1+2*y*y);
+
+  eular->x = rad->x * RAD_TO_DEG;
+  eular->y = rad->y * RAD_TO_DEG;
+  eular->z = rad->z * RAD_TO_DEG;
+}
+

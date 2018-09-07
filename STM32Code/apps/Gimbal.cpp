@@ -26,6 +26,7 @@ Gimbal::Gimbal():
 		mahony(0.8, 0.05),
 		madgwick(0.007),//0.002
 		ekf(),
+		small_ekf(),
 		
 //		fc_speed_x(0, 8, 8, 1.8),
 //		fc_angle_x(0, 500, 50, 0.05),
@@ -65,6 +66,7 @@ Gimbal::Gimbal():
 
     exit_attitude_thread = false;
     exit_control_thread = false;
+	  exit_sekf_thread = false;
     exit_can_thread = false;
     exit_packing_thread = false;
 	  exit_log_thread = false;
@@ -136,17 +138,31 @@ void Gimbal::packing_update(void *parameter)
 // attitude update
 int scop_accx, scop_accy, scop_accz;
 int scop_gxf, scop_gyf, scop_gzf;
+int scop_delta_time;
 void Gimbal::attitude_update(void *parameter)
 {	
+		static uint32_t tnow, tPrev;
+		float dt;
+		uint32_t count;
+	
     attitude.update();
 	
-		scop_pitch = attitude.euler_rad.y*57295.8f;
-		scop_roll = attitude.euler_rad.x*57295.8f;
-		scop_yaw = attitude.euler_rad.z*57295.8f;
-	  
-	  scop_rollspeed = attitude.Gyro_raw.x*57295.8f;
-		scop_pitchspeed = attitude.Gyro_raw.y*57295.8f;
-		scop_yawspeed = attitude.Gyro_raw.z*57295.8f;//attitude.Gyro_af.z*100;
+	  tnow = SysTick->VAL;
+    count = (tnow > tPrev)?(SysTick->LOAD + tPrev - tnow) : (tPrev - tnow);
+    dt = count / US_T;
+    dt = dt / 1000000.0f;
+    tPrev=tnow;
+	
+	  delta_time += dt;
+	  delta_angle.x += attitude.Gyro_af.x * dt;
+	  delta_angle.y += attitude.Gyro_af.y * dt;
+	  delta_angle.z += attitude.Gyro_af.z * dt;
+	
+	  delta_vel.x += attitude.Accel_af.x * dt;
+	  delta_vel.y += attitude.Accel_af.y * dt;
+	  delta_vel.z += attitude.Accel_af.z * dt;
+	
+	
 	
 	  scop_gxf = attitude.Gyro_af.x * 57295.8f;
 	  scop_gyf = attitude.Gyro_af.y * 57295.8f;
@@ -155,6 +171,27 @@ void Gimbal::attitude_update(void *parameter)
 	  scop_accx = attitude.Acc_raw.x * 10000;
 	  scop_accy = attitude.Acc_raw.y * 10000;
 	  scop_accz = attitude.Acc_raw.z * 10000;
+		
+		scop_delta_time = dt*1000000;
+}
+
+int scop_euler_x;
+int scop_euler_y;
+int scop_euler_z;
+void Gimbal::sekf_update(void *parameter)
+{
+	Vector3f euler_deg, euler_rad;
+	Vector3f enc(0,0,0);
+	small_ekf.RunEKF(delta_time, delta_angle, delta_vel, enc);
+	small_ekf.getEuler(&euler_deg, &euler_rad);
+	delta_time = 0;
+	delta_angle(0.0f, 0.0f, 0.0f);
+	delta_vel(0.0f, 0.0f, 0.0f);
+	
+	
+	scop_euler_x = euler_deg.x * 1000;
+  scop_euler_y = euler_deg.y * 1000;
+	scop_euler_z = euler_deg.z * 1000;
 }
 
 
@@ -914,15 +951,9 @@ void Gimbal::mavlink_decode_msg(void *parameter)
 				mavlink_decode_info.data_type = MAVLINK_GIMBAL_COMMAND_TYPE;
 			  break;
 			case MAVLINK_MSG_ID_GIMBAL_DRONE_DATA:
-//				mavlink.drone_data_decode(&mavlink_msg_rx, &Drone_quat, &Vel_drone);
-//			  mavlink_decode_info.data_type = MAVLINK_DRONE_DATA_TYPE;
-//			 {
-//			  Quaternion q;
-//				Vector3f euler_err;
-//			  vel_remap_t2(axis_angle, Drone_quat, attitude.euler_rad, Vel_drone, &Vel_camera, &Acc_camera);
-//				attitude.Acc_camera = Acc_camera;
-//			 }
-
+				mavlink.drone_data_decode(&mavlink_msg_rx, &Mag_drone, &Vel_drone);
+			  small_ekf.setMagData(Mag_drone);
+			  small_ekf.setMeasVelNED(Vel_drone);
 			  break;
 			default:
 				break;

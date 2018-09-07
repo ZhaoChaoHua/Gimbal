@@ -1,10 +1,10 @@
 .\objects\ringbuffer.o: apps\ringbuffer.cpp
 .\objects\ringbuffer.o: apps\ringbuffer.h
 .\objects\ringbuffer.o: .\rt_thread\include\rtthread.h
-.\objects\ringbuffer.o: ..\xd_bgc\rtconfig.h
+.\objects\ringbuffer.o: ..\STM32Code\rtconfig.h
 .\objects\ringbuffer.o: .\rt_thread\include\rtdebug.h
 .\objects\ringbuffer.o: .\rt_thread\include\rtdef.h
-.\objects\ringbuffer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\ringbuffer.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\ringbuffer.o: .\rt_thread\include\rtservice.h
 .\objects\ringbuffer.o: .\rt_thread\include\rtm.h
 .\objects\ringbuffer.o: .\rt_thread\include\rtthread.h
@@ -12,7 +12,7 @@
 .\objects\ringbuffer.o: .\rt_thread\components\drivers\include\drivers/serial.h
 .\objects\ringbuffer.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\ringbuffer.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\ringbuffer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\ringbuffer.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\ringbuffer.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\ringbuffer.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\ringbuffer.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -45,5 +45,5 @@
 .\objects\ringbuffer.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_usart.h
 .\objects\ringbuffer.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\objects\ringbuffer.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
-.\objects\ringbuffer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
-.\objects\ringbuffer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h
+.\objects\ringbuffer.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\ringbuffer.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\assert.h

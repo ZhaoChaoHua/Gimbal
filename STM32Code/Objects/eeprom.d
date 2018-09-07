@@ -2,7 +2,7 @@
 .\objects\eeprom.o: driver\eeprom.h
 .\objects\eeprom.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\eeprom.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\eeprom.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\eeprom.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\eeprom.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\eeprom.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\eeprom.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -36,10 +36,10 @@
 .\objects\eeprom.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\objects\eeprom.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
 .\objects\eeprom.o: .\rt_thread\include\rtthread.h
-.\objects\eeprom.o: ..\xd_bgc\rtconfig.h
+.\objects\eeprom.o: ..\STM32Code\rtconfig.h
 .\objects\eeprom.o: .\rt_thread\include\rtdebug.h
 .\objects\eeprom.o: .\rt_thread\include\rtdef.h
-.\objects\eeprom.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\eeprom.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\eeprom.o: .\rt_thread\include\rtservice.h
 .\objects\eeprom.o: .\rt_thread\include\rtm.h
 .\objects\eeprom.o: .\rt_thread\include\rtthread.h
@@ -48,6 +48,6 @@
 .\objects\eeprom.o: driver\position_sen.h
 .\objects\eeprom.o: driver\stm32f40x_timer.h
 .\objects\eeprom.o: .\rt_thread\components\finsh\finsh.h
-.\objects\eeprom.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
-.\objects\eeprom.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
-.\objects\eeprom.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\eeprom.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
+.\objects\eeprom.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\eeprom.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

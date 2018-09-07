@@ -1,11 +1,11 @@
 .\objects\spi_core.o: driver\spi_core.c
 .\objects\spi_core.o: driver\spi.h
-.\objects\spi_core.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\spi_core.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\spi_core.o: .\rt_thread\include\rtthread.h
-.\objects\spi_core.o: ..\xd_bgc\rtconfig.h
+.\objects\spi_core.o: ..\STM32Code\rtconfig.h
 .\objects\spi_core.o: .\rt_thread\include\rtdebug.h
 .\objects\spi_core.o: .\rt_thread\include\rtdef.h
-.\objects\spi_core.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\spi_core.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\spi_core.o: .\rt_thread\include\rtservice.h
 .\objects\spi_core.o: .\rt_thread\include\rtm.h
 .\objects\spi_core.o: .\rt_thread\include\rtthread.h

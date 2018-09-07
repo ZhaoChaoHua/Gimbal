@@ -51,6 +51,7 @@ static uint32_t tim_count;
 static rt_thread_t serial_thread;
 static rt_thread_t attitude_thread;
 static rt_thread_t control_thread;
+static rt_thread_t sekf_thread;
 static rt_thread_t can_thread;
 
 static rt_thread_t packing_thread;
@@ -67,11 +68,12 @@ extern "C"
 
 // 事件触发任务列表
 const Scheduler::Task Gimbal::scheduler_tasks[] PROGMEM = {
-//      Name                Event        Rate(Hz)   RunTime(us)
+//      Name                Event        Rate(Hz)   RunTime(us)S
 //------------------------------------------------------------
-    { "attitude",      ATTITUDE_EVENT,    2000,       100},
+    { "attitude",      ATTITUDE_EVENT,    1000,       100},
     { "control",       CONTROL_EVENT,     1000,       100},
-    { "serial",        SERIAL_EVENT,      50,        100},
+		{ "sekf",          SEKF_EVENT,        500,        100},
+    { "serial",        SERIAL_EVENT,      50,         100},
     { "packet",        PACKET_EVENT,      50,         100},
 		{ "acc_cal",       ACC_CAL_EVENT,     10,         100},   
 		{ "direction",     DIRECTION_EVENT,   10,         100},
@@ -141,6 +143,22 @@ void rt_entry_thread_attitude(void* parameter)
     {
         rt_event_recv(gimbal.Sys_event(), ATTITUDE_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
         gimbal.attitude_update(parameter);
+    }
+}
+
+// SEKF process thread
+// thread stack    : 1024
+// thread priority : 0x04
+// thread stick    : 2
+//ALIGN(RT_ALIGN_SIZE)
+//static char thread_attitude_stack[SEKF_PROCESS_STACK];
+void rt_entry_thread_sekf(void* parameter)
+{
+    rt_uint32_t e;
+    while(!gimbal.exit_sekf_thread)
+    {
+        rt_event_recv(gimbal.Sys_event(), SEKF_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, &e);
+        gimbal.sekf_update(parameter);
     }
 }
 
@@ -233,6 +251,17 @@ void rt_init_thread_entry(void* parameter)
                                        ATTITUDE_PROCESS_TICK);
     if (attitude_thread != RT_NULL)
         rt_thread_startup(attitude_thread);
+		
+		//sekf thread init
+		sekf_thread = rt_thread_create("attitude",
+                                       rt_entry_thread_sekf, 
+                                       RT_NULL,
+                                       SEKF_PROCESS_STACK, 
+                                       SEKF_PROCESS_PRIORITY,
+                                       SEKF_PROCESS_TICK);
+    if (sekf_thread != RT_NULL)
+        rt_thread_startup(sekf_thread);
+		
     // control thread init
     control_thread = rt_thread_create("control",
                                       rt_entry_thread_control,

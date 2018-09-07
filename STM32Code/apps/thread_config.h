@@ -16,6 +16,11 @@
 #define ATTITUDE_PROCESS_PRIORITY  0x3
 #define ATTITUDE_PROCESS_TICK      2
 
+// Small EKF thead
+#define SEKF_PROCESS_STACK      4096
+#define SEKF_PROCESS_PRIORITY   0x4
+#define SEKF_PROCESS_TICK       2
+
 // control thread
 #define CONTROL_PROCESS_STACK      1024
 #define CONTROL_PROCESS_PRIORITY   0x5
@@ -47,6 +52,7 @@
 #define DIRECTION_PROCESS_TICK       2
 
 
+
 // system events flags
 #define ATTITUDE_EVENT   (1<<0)
 #define CONTROL_EVENT    (1<<1)
@@ -55,6 +61,7 @@
 #define LOG_EVENT        (1<<4)
 #define ACC_CAL_EVENT    (1<<5)
 #define DIRECTION_EVENT  (1<<6)
+#define SEKF_EVENT       (1<<7)
 
 
 #endif

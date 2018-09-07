@@ -5,7 +5,7 @@
 .\objects\time_measure.o: .\apps\stm32f40x_define.h
 .\objects\time_measure.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\time_measure.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\time_measure.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\time_measure.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\time_measure.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\time_measure.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\time_measure.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -39,10 +39,10 @@
 .\objects\time_measure.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\objects\time_measure.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
 .\objects\time_measure.o: .\rt_thread\include\rtthread.h
-.\objects\time_measure.o: ..\xd_bgc\rtconfig.h
+.\objects\time_measure.o: ..\STM32Code\rtconfig.h
 .\objects\time_measure.o: .\rt_thread\include\rtdebug.h
 .\objects\time_measure.o: .\rt_thread\include\rtdef.h
-.\objects\time_measure.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\time_measure.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\time_measure.o: .\rt_thread\include\rtservice.h
 .\objects\time_measure.o: .\rt_thread\include\rtm.h
 .\objects\time_measure.o: .\rt_thread\include\rtthread.h

@@ -3,7 +3,7 @@
 .\objects\position_sen.o: .\apps\stm32f40x_define.h
 .\objects\position_sen.o: .\Libraries\CMSIS\ST\STM32F4xx\Include\stm32f4xx.h
 .\objects\position_sen.o: .\Libraries\CMSIS\Include\core_cm4.h
-.\objects\position_sen.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\position_sen.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\position_sen.o: .\Libraries\CMSIS\Include\core_cmInstr.h
 .\objects\position_sen.o: .\Libraries\CMSIS\Include\core_cmFunc.h
 .\objects\position_sen.o: .\Libraries\CMSIS\Include\core_cm4_simd.h
@@ -37,10 +37,10 @@
 .\objects\position_sen.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\stm32f4xx_wwdg.h
 .\objects\position_sen.o: .\Libraries\STM32F4xx_StdPeriph_Driver\inc\misc.h
 .\objects\position_sen.o: .\rt_thread\include\rtthread.h
-.\objects\position_sen.o: ..\xd_bgc\rtconfig.h
+.\objects\position_sen.o: ..\STM32Code\rtconfig.h
 .\objects\position_sen.o: .\rt_thread\include\rtdebug.h
 .\objects\position_sen.o: .\rt_thread\include\rtdef.h
-.\objects\position_sen.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
+.\objects\position_sen.o: D:\Keil_v5\ARM\ARMCC\Bin\..\include\stdarg.h
 .\objects\position_sen.o: .\rt_thread\include\rtservice.h
 .\objects\position_sen.o: .\rt_thread\include\rtm.h
 .\objects\position_sen.o: .\rt_thread\include\rtthread.h

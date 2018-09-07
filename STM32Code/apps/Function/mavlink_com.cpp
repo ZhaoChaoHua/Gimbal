@@ -277,18 +277,17 @@ int Mavlink::gimbal_command_data_decode(const Mavlink_msg_t* msg)
 	return pck.command;
 }
 
-uint8_t Mavlink::drone_data_decode(const Mavlink_msg_t* msg, Quaternion* quat, Vector3f* gps_vel)
+uint8_t Mavlink::drone_data_decode(const Mavlink_msg_t* msg, Vector3f* mag, Vector3f* vel)
 {
 	Mavlink_gimbal_drone_data_t pck;
 	uint8_t len = msg->payload_lth < MAVLINK_MSG_ID_GIMBAL_DRONE_DATA_LEN ? msg->payload_lth : MAVLINK_MSG_ID_GIMBAL_DRONE_DATA_LEN;
 	rt_memcpy(&pck, msg->data, len);	
-	quat->q1 = pck.quat[0];
-	quat->q2 = pck.quat[1];
-	quat->q3 = pck.quat[2];
-	quat->q4 = pck.quat[3];
-	gps_vel->x = pck.gps_vel[0];
-	gps_vel->y = pck.gps_vel[1];
-	gps_vel->z = pck.gps_vel[2];
+	mag->x = pck.mag[0];
+	mag->y = pck.mag[1];
+	mag->z = pck.mag[2];
+	vel->x = pck.vel[0];
+	vel->y = pck.vel[1];
+	vel->z = pck.vel[2];
 	
 	return 0;
 }
