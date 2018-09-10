@@ -46,7 +46,7 @@ void DirectionAlign::aligning_update(Vector3f *euler, Vector3f *enc, Vector3f *m
 	
 	static int state = 0;
 	float mot_step = 0.03;
-	float mot_max = 20;
+	float mot_max = 100;
 	float euler_max = 10.0f / RAD2DEG;
 	
 	if(enc->x == 0 && enc->y == 0 && enc->z == 0) return;

@@ -406,16 +406,11 @@ void MPU6500::read_Data(void)
     Acc_ms2.y = Acc_I16.y * accel_scale;
     Acc_ms2.z = Acc_I16.z * accel_scale;
     
-//    Gyro_rad.rotate((enum Rotation)imu_rotation.get());ROTATION_NONE
-//    Acc_ms2.rotate((enum Rotation)imu_rotation.get());
-//		Gyro_rad.rotate((enum Rotation)ROTATION_ROLL_270_YAW_90);
-//    Acc_ms2.rotate((enum Rotation)ROTATION_ROLL_270_YAW_90);
-		
-		  //D2
-		Gyro_rad.rotate((enum Rotation)ROTATION_PITCH_180_YAW_90);
-    Acc_ms2.rotate((enum Rotation)ROTATION_PITCH_180_YAW_90);
-//		Gyro_rad.rotate((enum Rotation)ROTATION_PITCH_180);
-//    Acc_ms2.rotate((enum Rotation)ROTATION_PITCH_180);
+		  //D1
+		Gyro_rad.rotate((enum Rotation)ROTATION_YAW_90);
+    Acc_ms2.rotate((enum Rotation)ROTATION_YAW_90);
+		Gyro_rad.rotate((enum Rotation)ROTATION_PITCH_90);
+    Acc_ms2.rotate((enum Rotation)ROTATION_PITCH_90);
 //    
     Acc_correct.x = (Acc_ms2.x - accel_offs_x) * accel_T_x;
     Acc_correct.y = (Acc_ms2.y - accel_offs_y) * accel_T_y;

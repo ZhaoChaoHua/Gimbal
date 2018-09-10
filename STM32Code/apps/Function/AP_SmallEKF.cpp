@@ -78,7 +78,7 @@ void SmallEKF::RunEKF(float delta_time, const Vector3f &delta_angles, const Vect
     predictCovariance();
 
     // fuse SmallEKF velocity data
-//	fuseVelocity(YawAligned);
+	  fuseVelocity(YawAligned);
 
     
     // Align the heading once there has been enough time for the filter to settle and the tilt corrections have dropped below a threshold
@@ -935,6 +935,13 @@ bool SmallEKF::getStatus() const
 //    return  YawAligned && (run_time > 30000);
 }
 
+float loop_lim(float x, float a)
+{
+	if(x > a) x -= 2*a;
+	else if(x < -a) x += 2*a;
+	return x;
+}
+
 void SmallEKF::getEuler(Vector3f *eular, Vector3f *rad)
 {   
 	float w, x, y, z;
@@ -949,9 +956,11 @@ void SmallEKF::getEuler(Vector3f *eular, Vector3f *rad)
 //	rad->z = atan2f(2*(q1*q2+q0*q3), (q0*q0+q1*q1-q2*q2-q3*q3));
 	
 	// ROT(Z,X,Y) rotation frame
-	rad->x = asinf(2*(y*z-w*x));
-	rad->y = atan2f(-2*(x*z+w*y), 2*w*w-1+2*z*z);
+	rad->x = loop_lim(asinf(2*(y*z-w*x)), PI);
+	rad->y = loop_lim(atan2f(-2*(x*z+w*y), 2*w*w-1+2*z*z), PI);
 	rad->z = atan2f(-2*(x*y+w*z), 2*w*w-1+2*y*y);
+	
+	 
 	
 //	// ROT(Z,X,Y) fix frame
 //	rad->x = asinf(-2*(y*z+w*x));

@@ -44,12 +44,20 @@ Gimbal::Gimbal():
 //		fc_angle_z(0, 150, 0, 0.07),
 		
 //		// Canon
-		fc_speed_x(0, 4, 0, 4),
-		fc_angle_x(0, 150, 0, 0.07),
-		fc_speed_y(0, 4, 0, 3),
-		fc_angle_y(0, 150, 0, 0.07),
-		fc_speed_z(0, 2.8, 0, 7),
-		fc_angle_z(0, 150, 0, 0.07),
+//		fc_speed_x(0, 4, 0, 4),
+//		fc_angle_x(0, 150, 0, 0.07),
+//		fc_speed_y(0, 4, 0, 3),
+//		fc_angle_y(0, 150, 0, 0.07),
+//		fc_speed_z(0, 2.8, 0, 7),
+//		fc_angle_z(0, 150, 0, 0.07),
+		
+		//D1
+		fc_speed_x(0, 2, 9, 0.9),
+		fc_angle_x(0, 70, 0, 0.12),
+		fc_speed_y(0, 1.6, 6, 0.8),
+		fc_angle_y(0, 70, 0, 0.12),
+		fc_speed_z(0, 2.4, 6, 1.5),
+		fc_angle_z(0, 70, 0, 0.12),
 		
     attitude_control(attitude, 
                      param.pd_stabilize_roll, param.pd_stabilize_pitch, param.pd_stabilize_yaw,
@@ -154,13 +162,13 @@ void Gimbal::attitude_update(void *parameter)
     tPrev=tnow;
 	
 	  delta_time += dt;
-	  delta_angle.x += attitude.Gyro_af.x * dt;
-	  delta_angle.y += attitude.Gyro_af.y * dt;
-	  delta_angle.z += attitude.Gyro_af.z * dt;
+	  delta_angle.x += attitude.Gyro_raw.x * dt;
+	  delta_angle.y += attitude.Gyro_raw.y * dt;
+	  delta_angle.z += attitude.Gyro_raw.z * dt;
 	
-	  delta_vel.x += attitude.Accel_af.x * dt;
-	  delta_vel.y += attitude.Accel_af.y * dt;
-	  delta_vel.z += attitude.Accel_af.z * dt;
+	  delta_vel.x += attitude.Acc_raw.x * dt;
+	  delta_vel.y += attitude.Acc_raw.y * dt;
+	  delta_vel.z += attitude.Acc_raw.z * dt;
 	
 	
 	
@@ -168,11 +176,11 @@ void Gimbal::attitude_update(void *parameter)
 	  scop_gyf = attitude.Gyro_af.y * 57295.8f;
 	  scop_gzf = attitude.Gyro_af.z * 57295.8f;
 	
-	  scop_accx = attitude.Acc_raw.x * 10000;
-	  scop_accy = attitude.Acc_raw.y * 10000;
-	  scop_accz = attitude.Acc_raw.z * 10000;
+	  scop_accx = attitude.Accel_af.x * 10000;
+	  scop_accy = attitude.Accel_af.y * 10000;
+	  scop_accz = attitude.Accel_af.z * 10000;
 		
-		scop_delta_time = dt*1000000;
+		
 }
 
 int scop_euler_x;
@@ -182,6 +190,7 @@ void Gimbal::sekf_update(void *parameter)
 {
 	Vector3f euler_deg, euler_rad;
 	Vector3f enc(0,0,0);
+	scop_delta_time = delta_time*1000000;
 	small_ekf.RunEKF(delta_time, delta_angle, delta_vel, enc);
 	small_ekf.getEuler(&euler_deg, &euler_rad);
 	delta_time = 0;
@@ -361,6 +370,8 @@ void Gimbal::direction_update(void *parameter)
 {
 	Vector3f mot, dm, de;
 	static int cnt;
+	
+	if(interface.disable_motors) return;
 
 	if(direction_align.not_align())
 	{
