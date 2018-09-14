@@ -4,14 +4,14 @@
 #include <rtdevice.h>
 
 #define TX_LEN_GSM      255
-#define RX_LEN_GSM      1024
+#define RX_LEN_GSM      56*20
 
 static struct rt_fserial_device rt_fuart_device;
 
 static uint8_t tx_buffer[TX_LEN_GSM];
 static uint8_t rx_buffer[RX_LEN_GSM];
 
-#define RINGBUFFER_SIZE     1024
+#define RINGBUFFER_SIZE     56*20
 static uint8_t buffer[RINGBUFFER_SIZE];
 static struct rt_ringbuffer ring_data;
 
@@ -216,6 +216,8 @@ static rt_err_t rt_fast_uart_close(rt_device_t dev)
     return RT_EOK;
 }
 
+int scop_wid;
+int scop_rid;
 static rt_err_t rt_fast_uart_control(rt_device_t dev, rt_uint8_t cmd, void *args)
 {
     RT_ASSERT(dev != RT_NULL);
@@ -227,6 +229,8 @@ static rt_err_t rt_fast_uart_control(rt_device_t dev, rt_uint8_t cmd, void *args
         case RT_DEVICE_CTRL_DATA_READY:
             *len = (ring_data.write_index >= ring_data.read_index)? (ring_data.write_index - ring_data.read_index):
                     (ring_data.buffer_size - (ring_data.read_index - ring_data.write_index));
+				    scop_rid = ring_data.read_index;
+				    scop_wid = ring_data.write_index;
             break;
         default :
             break;

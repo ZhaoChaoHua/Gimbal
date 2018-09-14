@@ -138,7 +138,7 @@
 
 
 #define MAVLINK_MSG_ID_GIMBAL_DRONE_DATA  87
-#define MAVLINK_MSG_ID_GIMBAL_DRONE_DATA_LEN  24
+#define MAVLINK_MSG_ID_GIMBAL_DRONE_DATA_LEN  48
 #define MAVLINK_MSG_ID_GIMBAL_DRONE_DATA_CRC  56
 
 
@@ -265,6 +265,8 @@ typedef struct {
 
 typedef struct {
 	float mag[3];
+	float emag[3];
+	float bmag[3];
 	float vel[3];
 }__attribute__((packed)) Mavlink_gimbal_drone_data_t;
 
@@ -322,7 +324,7 @@ class Mavlink : public SerialManager
 		// Return the command id
 		int gimbal_command_data_decode(const Mavlink_msg_t* msg);
 																
-	  uint8_t drone_data_decode(const Mavlink_msg_t* msg, Vector3f* mag, Vector3f* vel);
+	  uint8_t drone_data_decode(const Mavlink_msg_t* msg, Vector3f* mag, Vector3f* emag, Vector3f* bmag, Vector3f* vel);
 		
 		rt_size_t mavlink2serial(Mavlink_msg_t *msg, uint8_t *buf);
 		

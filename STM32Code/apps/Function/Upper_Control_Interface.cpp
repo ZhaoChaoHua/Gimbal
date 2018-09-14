@@ -19,7 +19,7 @@ Upper_Control_Interface::Upper_Control_Interface()
 	this->speed_limit.x = 50*DEG2RAD*this->speed_cof.x;
 	this->speed_limit.y = 50*DEG2RAD*this->speed_cof.y;
 	this->speed_limit.z = 50*DEG2RAD*this->speed_cof.z;
-	this->disable_motors = 1;
+	this->disable_motors = 0;
 	this->dead_zone(12.0f*DEG2RAD, 12.0f*DEG2RAD, 12.0f*DEG2RAD);
 	// drone_state 0:lock, 1: unlosk
 	this->drone_state = 0;

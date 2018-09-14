@@ -134,7 +134,9 @@ class Gimbal
 		Vector3f              Err_camera;
 		Vector3f              Vel_camera;
 		Vector3f              Acc_camera;
-		Vector3f            Mag_drone;
+		Vector3f              Mag_drone;
+		Vector3f              EMag;
+		Vector3f              BMag;
 		
 		Vector3f              Euler_rad_from_drone;
 

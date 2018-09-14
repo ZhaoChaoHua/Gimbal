@@ -47,6 +47,7 @@ RTM_EXPORT(rt_ringbuffer_init);
 /**
  * put a block of data into ring buffer
  */
+int scop_ringsize;
 rt_size_t rt_ringbuffer_put(struct rt_ringbuffer *rb,
                             const rt_uint8_t     *ptr,
                             rt_uint16_t           length)
@@ -57,6 +58,7 @@ rt_size_t rt_ringbuffer_put(struct rt_ringbuffer *rb,
 
     /* whether has enough space */
     size = rt_ringbuffer_space_len(rb);
+	  scop_ringsize = size;
 
     /* no space */
     if (size == 0)

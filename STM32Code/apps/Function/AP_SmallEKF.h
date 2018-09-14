@@ -90,6 +90,9 @@ public:
 		void setMagData(Vector3f mag);
 		
 		void setMeasVelNED(Vector3f vel);
+		
+		void setEMag(Vector3f m);
+		void setBMag(Vector3f b);
 
     static const struct AP_Param::GroupInfo var_info[];
 		
@@ -134,6 +137,9 @@ private:
     Vector3f magData;
 		
 		Vector3f measVelNED;
+		
+		Vector3f body_magfield;
+    Vector3f earth_magfield;
 
     uint32_t imuSampleTime_ms;
     float dtIMU;

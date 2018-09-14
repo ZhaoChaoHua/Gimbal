@@ -124,6 +124,8 @@ void Gimbal::setup(const Scheduler::Task *tasks, uint8_t num_tasks)
 		gimbal_user_command = NO_USER_COMMAND;
 		
 }
+
+int scop_serial_update_flag;
 // serial update
 void Gimbal::serial_update(void *parameter)
 {
@@ -133,6 +135,9 @@ void Gimbal::serial_update(void *parameter)
 		serial_thread_init = true;
 	}
 	mavlink.receive_mavlink();
+	static int cnt;
+	cnt++;
+	scop_serial_update_flag = cnt%2;
 }
 
 // packing update
@@ -155,6 +160,10 @@ void Gimbal::attitude_update(void *parameter)
 	
     attitude.update();
 	
+	  // Convert to gimbal fram
+	  attitude.Gyro_af.x = -attitude.Gyro_af.x;
+	  attitude.Gyro_af.z = -attitude.Gyro_af.z;
+	
 	  tnow = SysTick->VAL;
     count = (tnow > tPrev)?(SysTick->LOAD + tPrev - tnow) : (tPrev - tnow);
     dt = count / US_T;
@@ -176,9 +185,9 @@ void Gimbal::attitude_update(void *parameter)
 	  scop_gyf = attitude.Gyro_af.y * 57295.8f;
 	  scop_gzf = attitude.Gyro_af.z * 57295.8f;
 	
-	  scop_accx = attitude.Accel_af.x * 10000;
-	  scop_accy = attitude.Accel_af.y * 10000;
-	  scop_accz = attitude.Accel_af.z * 10000;
+	  scop_accx = attitude.Acc_raw.x * 10000;
+	  scop_accy = attitude.Acc_raw.y * 10000;
+	  scop_accz = attitude.Acc_raw.z * 10000;
 		
 		
 }
@@ -189,10 +198,10 @@ int scop_euler_z;
 void Gimbal::sekf_update(void *parameter)
 {
 	Vector3f euler_deg, euler_rad;
-	Vector3f enc(0,0,0);
+	Vector3f enc(-axis_angle.x,axis_angle.y,-axis_angle.z);
 	scop_delta_time = delta_time*1000000;
 	small_ekf.RunEKF(delta_time, delta_angle, delta_vel, enc);
-	small_ekf.getEuler(&euler_deg, &euler_rad);
+	small_ekf.getEuler(&euler_deg, &attitude.euler_rad);
 	delta_time = 0;
 	delta_angle(0.0f, 0.0f, 0.0f);
 	delta_vel(0.0f, 0.0f, 0.0f);
@@ -256,7 +265,11 @@ void Gimbal::control_update(void *parameter)
 		// Angle feedback
 
 		angle_feedback = attitude.euler_rad;
+		
+#ifndef FIRST_TIME_INIT
 		angle_feedback.z = angle_feedback.z - euler_z_zero;
+#endif
+		
 //		circadjust(angle_feedback.z, PI);
 		
 		if(interface.gimbal_mode == TRACKING_MODE)
@@ -371,7 +384,7 @@ void Gimbal::direction_update(void *parameter)
 	Vector3f mot, dm, de;
 	static int cnt;
 	
-	if(interface.disable_motors) return;
+//	if(interface.disable_motors) return;
 
 	if(direction_align.not_align())
 	{
@@ -913,7 +926,10 @@ void Gimbal::mavlink_read_param(void *parameter)
 	mavlink_decode_info.data_type = NONE;
 }
 
-int scop_euler_errx, scop_euler_erry, scop_euler_errz;
+int scop_magx, scop_magy, scop_magz;
+int scop_emagx, scop_emagy, scop_emagz;
+int scop_bmagx, scop_bmagy, scop_bmagz;
+int scop_velx, scop_vely, scop_velz;
 void Gimbal::mavlink_decode_msg(void *parameter)
 {
 	Vector3f vec;
@@ -962,9 +978,24 @@ void Gimbal::mavlink_decode_msg(void *parameter)
 				mavlink_decode_info.data_type = MAVLINK_GIMBAL_COMMAND_TYPE;
 			  break;
 			case MAVLINK_MSG_ID_GIMBAL_DRONE_DATA:
-				mavlink.drone_data_decode(&mavlink_msg_rx, &Mag_drone, &Vel_drone);
+				mavlink.drone_data_decode(&mavlink_msg_rx, &Mag_drone, &EMag, &BMag, &Vel_drone);
 			  small_ekf.setMagData(Mag_drone);
 			  small_ekf.setMeasVelNED(Vel_drone);
+			  small_ekf.setEMag(EMag);
+			  small_ekf.setBMag(BMag);
+			  
+			  scop_magx = Mag_drone.x*1000;
+				scop_magy = Mag_drone.y*1000;
+				scop_magz = Mag_drone.z*1000;
+			  scop_emagx = EMag.x*1000;
+				scop_emagy = EMag.y*1000;
+				scop_emagz = EMag.z*1000;
+			  scop_bmagx = BMag.x*1000;
+				scop_bmagy = BMag.y*1000;
+				scop_bmagz = BMag.z*1000;
+			  scop_velx = Vel_drone.x*1000;
+				scop_vely = Vel_drone.y*1000;
+				scop_velz = Vel_drone.z*1000;
 			  break;
 			default:
 				break;

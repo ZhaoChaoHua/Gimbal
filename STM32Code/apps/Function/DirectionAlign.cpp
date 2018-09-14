@@ -36,6 +36,7 @@ float small_angle_sub(float a, float b)
 	return c;
 }
 
+int scop_align_state;
 // 计算编码器和电机方向
 void DirectionAlign::aligning_update(Vector3f *euler, Vector3f *enc, Vector3f *mot)
 {
@@ -50,6 +51,8 @@ void DirectionAlign::aligning_update(Vector3f *euler, Vector3f *enc, Vector3f *m
 	float euler_max = 10.0f / RAD2DEG;
 	
 	if(enc->x == 0 && enc->y == 0 && enc->z == 0) return;
+	
+	scop_align_state = state;
 	
 	switch(state)
 	{

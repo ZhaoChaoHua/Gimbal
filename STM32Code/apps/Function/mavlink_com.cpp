@@ -40,17 +40,19 @@ rt_size_t Mavlink::send_mavlink(Mavlink_msg_t *msg)
 	return rt_device_write(rwdevice,0,buf,len);
 }
 
+int scop_len;
 // Convert a buffer to Mavlink msg
 void Mavlink::receive_mavlink(void)
 {
 	int len;
     rt_size_t ret;
 	uint8_t buf[256];
-    rt_device_control(rwdevice, RT_DEVICE_CTRL_DATA_READY, &len);
-    
-	if(len > 0)
+//    rt_device_control(rwdevice, RT_DEVICE_CTRL_DATA_READY, &len);
+	ret = rt_device_read(rwdevice,0,buf,0x38);
+    scop_len = len;
+	if(ret != 0)
 	{
-        ret = rt_device_read(rwdevice,0,buf,len);
+//        ret = rt_device_read(rwdevice,0,buf,len);
         for(int i=0; i< ret; i++)
         {
             switch(_mavlink_rx_sta)
@@ -277,7 +279,7 @@ int Mavlink::gimbal_command_data_decode(const Mavlink_msg_t* msg)
 	return pck.command;
 }
 
-uint8_t Mavlink::drone_data_decode(const Mavlink_msg_t* msg, Vector3f* mag, Vector3f* vel)
+uint8_t Mavlink::drone_data_decode(const Mavlink_msg_t* msg, Vector3f* mag, Vector3f* emag, Vector3f* bmag, Vector3f* vel)
 {
 	Mavlink_gimbal_drone_data_t pck;
 	uint8_t len = msg->payload_lth < MAVLINK_MSG_ID_GIMBAL_DRONE_DATA_LEN ? msg->payload_lth : MAVLINK_MSG_ID_GIMBAL_DRONE_DATA_LEN;
@@ -285,6 +287,12 @@ uint8_t Mavlink::drone_data_decode(const Mavlink_msg_t* msg, Vector3f* mag, Vect
 	mag->x = pck.mag[0];
 	mag->y = pck.mag[1];
 	mag->z = pck.mag[2];
+	emag->x = pck.emag[0];
+	emag->y = pck.emag[1];
+	emag->z = pck.emag[2];
+	bmag->x = pck.bmag[0];
+	bmag->y = pck.bmag[1];
+	bmag->z = pck.bmag[2];
 	vel->x = pck.vel[0];
 	vel->y = pck.vel[1];
 	vel->z = pck.vel[2];

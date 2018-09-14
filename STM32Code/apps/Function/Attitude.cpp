@@ -79,8 +79,8 @@ void Attitude::update()
 		Acc_raw = _mpu.Acc_correct;
 	  Gyro_raw = _mpu.Gyro_rad;
 	
-//	  Accel_af = Acc_raw;
-//    Gyro_af = Gyro_raw;
+	  Accel_af = Acc_raw;
+    Gyro_af = Gyro_raw;
 
 	  // Lowpass filter
 //    Accel_af = _accel_filter.apply(Acc_raw);

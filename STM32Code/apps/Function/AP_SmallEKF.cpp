@@ -95,11 +95,11 @@ void SmallEKF::RunEKF(float delta_time, const Vector3f &delta_angles, const Vect
 
     // Fuse magnetometer data if  we have new measurements and an aligned heading
     
-//    readMagData();
-//    if (newDataMag && YawAligned) {
-//        fuseCompass();
-//        newDataMag = false;
-//    }
+    readMagData();
+    if (newDataMag && YawAligned) {
+        fuseCompass();
+        newDataMag = false;
+    }
     
 }
 
@@ -832,6 +832,16 @@ void SmallEKF::alignHeading()
     }
 }
 
+void SmallEKF::setEMag(Vector3f e)
+{
+	earth_magfield = e;
+}
+
+void SmallEKF::setBMag(Vector3f b)
+{
+	body_magfield = b;
+}
+
 
 // Calculate magnetic heading innovation
 float SmallEKF::calcMagHeadingInnov()
@@ -849,12 +859,11 @@ float SmallEKF::calcMagHeadingInnov()
     Tms[2][2] = cosTheta*cosPhi;
 
     // get earth magnetic field estimate from main ekf if available to take advantage of main ekf magnetic field learning
-    Vector3f body_magfield, earth_magfield;
     float declination;
 //    if (_main_ekf.healthy()) {
 //        _main_ekf.getMagNED(earth_magfield);
 //        _main_ekf.getMagXYZ(body_magfield);
-//        declination = atan2f(earth_magfield.y,earth_magfield.x);
+        declination = atan2f(earth_magfield.y,earth_magfield.x);
 //    } else {
 //        body_magfield.zero();
 //        earth_magfield.zero();
@@ -959,6 +968,10 @@ void SmallEKF::getEuler(Vector3f *eular, Vector3f *rad)
 	rad->x = loop_lim(asinf(2*(y*z-w*x)), PI);
 	rad->y = loop_lim(atan2f(-2*(x*z+w*y), 2*w*w-1+2*z*z), PI);
 	rad->z = atan2f(-2*(x*y+w*z), 2*w*w-1+2*y*y);
+	
+	//Convert to gimbal fram
+	rad->x *= -1;
+	rad->z *= -1;
 	
 	 
 	
