@@ -970,8 +970,8 @@ void SmallEKF::getEuler(Vector3f *eular, Vector3f *rad)
 	rad->z = atan2f(-2*(x*y+w*z), 2*w*w-1+2*y*y);
 	
 	//Convert to gimbal fram
-//	rad->x *= -1;
-//	rad->z *= -1;
+	rad->x *= -1;
+	rad->z *= -1;
 	
 	 
 	
