@@ -161,8 +161,8 @@ void Gimbal::attitude_update(void *parameter)
     attitude.update();
 	
 	  // Convert to gimbal fram
-	  attitude.Gyro_af.x = -attitude.Gyro_af.x;
-	  attitude.Gyro_af.z = -attitude.Gyro_af.z;
+//	  attitude.Gyro_af.x = -attitude.Gyro_af.x;
+//	  attitude.Gyro_af.z = -attitude.Gyro_af.z;
 	
 	  tnow = SysTick->VAL;
     count = (tnow > tPrev)?(SysTick->LOAD + tPrev - tnow) : (tPrev - tnow);

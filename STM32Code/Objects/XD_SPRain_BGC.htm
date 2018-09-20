@@ -3,7 +3,7 @@
 <title>Static Call Graph - [.\Objects\XD_SPRain_BGC.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image .\Objects\XD_SPRain_BGC.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Fri Sep 14 15:05:53 2018
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Thu Sep 20 16:52:00 2018
 <BR><P>
 <H3>Maximum Stack Usage =       1600 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -2302,7 +2302,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[34b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Gimbal::mavlink_decode_msg(void*)
 </UL>
 
-<P><STRONG><a name="[268]"></a>SmallEKF::getEuler(Vector3&lang;float&rang;*, Vector3&lang;float&rang;*)</STRONG> (Thumb, 322 bytes, Stack size 40 bytes, ap_smallekf.o(.text))
+<P><STRONG><a name="[268]"></a>SmallEKF::getEuler(Vector3&lang;float&rang;*, Vector3&lang;float&rang;*)</STRONG> (Thumb, 290 bytes, Stack size 40 bytes, ap_smallekf.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = SmallEKF::getEuler(Vector3&lang;float&rang;*, Vector3&lang;float&rang;*) &rArr; __hardfp_asinf &rArr; sqrtf &rArr; __set_errno
 </UL>
 <BR>[Calls]<UL><LI><a href="#[269]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;loop_lim(float, float)
@@ -3424,7 +3424,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[36f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_entry_thread_serial
 </UL>
 
-<P><STRONG><a name="[324]"></a>Gimbal::attitude_update(void*)</STRONG> (Thumb, 560 bytes, Stack size 24 bytes, gimbal.o(.text))
+<P><STRONG><a name="[324]"></a>Gimbal::attitude_update(void*)</STRONG> (Thumb, 512 bytes, Stack size 24 bytes, gimbal.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 784<LI>Call Chain = Gimbal::attitude_update(void*) &rArr; Attitude::update() &rArr; AccelCalibrator::new_sample(const Vector3&lang;float&rang;&, float) &rArr; AccelCalibrator::run_fit(unsigned char, float&) &rArr; inverse(float*, float*, unsigned short) &rArr; mat_inverse(float*, float*, unsigned char) &rArr; mat_LU_decompose(float*, float*, float*, float*, unsigned char) &rArr; mat_mul(float*, float*, unsigned char) &rArr; operator new[] (unsigned) &rArr; operator new(unsigned) &rArr; malloc &rArr; __Heap_Full &rArr; __Heap_ProvideMemory &rArr; free
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Attitude::update()
@@ -3444,7 +3444,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[373]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rt_entry_thread_sekf
 </UL>
 
-<P><STRONG><a name="[326]"></a>Gimbal::control_update(void*)</STRONG> (Thumb, 1736 bytes, Stack size 128 bytes, gimbal.o(.text))
+<P><STRONG><a name="[326]"></a>Gimbal::control_update(void*)</STRONG> (Thumb, 1740 bytes, Stack size 128 bytes, gimbal.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 668<LI>Call Chain = Gimbal::control_update(void*) &rArr; get_tracking_angle_e(Vector3&lang;float&rang;, Vector3&lang;float&rang;, Vector3&lang;float&rang;, Vector3&lang;float&rang;) &rArr; euler2dcm_xy(Vector3&lang;float&rang;, ChMatrix3*) &rArr; __hardfp_sinf &rArr; __mathlib_rredf2
 </UL>
 <BR>[Calls]<UL><LI><a href="#[152]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Vector3&lang;float&rang;::operator -(const Vector3&lang;float&rang;&) const
@@ -4331,7 +4331,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[328]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Upper_Control_Interface::update_angle_setpoint()
 </UL>
 
-<P><STRONG><a name="[31c]"></a>Upper_Control_Interface::Upper_Control_Interface()</STRONG> (Thumb, 266 bytes, Stack size 8 bytes, upper_control_interface.o(.text))
+<P><STRONG><a name="[31c]"></a>Upper_Control_Interface::Upper_Control_Interface()</STRONG> (Thumb, 270 bytes, Stack size 8 bytes, upper_control_interface.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = Upper_Control_Interface::Upper_Control_Interface()
 </UL>
 <BR>[Calls]<UL><LI><a href="#[76]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;Vector3&lang;float&rang;::Vector3()
