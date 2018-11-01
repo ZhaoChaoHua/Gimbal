@@ -97,6 +97,11 @@ public:
     static const struct AP_Param::GroupInfo var_info[];
 		
 		void getEuler(Vector3f *eular, Vector3f *rad);
+		
+		float q0(void) { return state.quat.q1;};
+		float q1(void) { return state.quat.q2;};
+		float q2(void) { return state.quat.q3;};
+		float q3(void) { return state.quat.q4;};
 
 private:
 

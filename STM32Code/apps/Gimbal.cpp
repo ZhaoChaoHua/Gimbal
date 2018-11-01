@@ -1,7 +1,7 @@
 #include "Gimbal.h"
 #include "thread_config.h"
 
-//#define FIRST_TIME_INIT
+#define FIRST_TIME_INIT
 
 int scop_tms;
 int scop_roll;
@@ -24,7 +24,7 @@ Gimbal::Gimbal():
 		bmm("bmm150"),
 		mpu1("mpu65_1"),
 		mahony(0.8, 0.05),
-		madgwick(0.007),//0.002
+		madgwick(0.002),//0.002
 		ekf(),
 		small_ekf(),
 		
@@ -44,12 +44,12 @@ Gimbal::Gimbal():
 //		fc_angle_z(0, 150, 0, 0.07),
 		
 //		// Canon
-//		fc_speed_x(0, 4, 0, 4),
-//		fc_angle_x(0, 150, 0, 0.07),
-//		fc_speed_y(0, 4, 0, 3),
-//		fc_angle_y(0, 150, 0, 0.07),
-//		fc_speed_z(0, 2.8, 0, 7),
-//		fc_angle_z(0, 150, 0, 0.07),
+//		fc_speed_x(0, 0.9, 0.1, 2),
+//		fc_angle_x(0, 70, 0, 0.07),
+//		fc_speed_y(0, 0.9, 0.1, 2),
+//		fc_angle_y(0, 70, 0, 0.07),
+//		fc_speed_z(0, 0.9, 0.1, 3),
+//		fc_angle_z(0, 70, 0, 0.07),
 		
 		//D1
 		fc_speed_x(0, 2, 9, 0.9),
@@ -197,10 +197,10 @@ int scop_euler_y;
 int scop_euler_z;
 void Gimbal::sekf_update(void *parameter)
 {
-	Vector3f euler_deg, euler_rad;
+	Vector3f euler_deg, euler_rad, e0;
 	Vector3f enc(-axis_angle.x,axis_angle.y,-axis_angle.z);
 	scop_delta_time = delta_time*1000000;
-	small_ekf.RunEKF(delta_time, delta_angle, delta_vel, enc);
+	small_ekf.RunEKF(delta_time, delta_angle, delta_vel, e0);
 	small_ekf.getEuler(&euler_deg, &attitude.euler_rad);
 	delta_time = 0;
 	delta_angle(0.0f, 0.0f, 0.0f);
@@ -318,7 +318,9 @@ void Gimbal::control_update(void *parameter)
 		
     
 		// Speed feedback
-		speed_feedback = attitude.Gyro_af;
+		speed_feedback = attitude.Gyro_raw;
+		speed_feedback.x *= -1.0f;
+		speed_feedback.z *= -1.0f;
 		
 #ifndef FIRST_TIME_INIT
 		speed_feedback = speed_decouple(axis_angle, speed_feedback, enc_speed);
@@ -344,7 +346,6 @@ void Gimbal::control_update(void *parameter)
 		scop_exciting_motz = motors_output.z * 10000;
 		
 		// Direction align
-		
 		
 		// If direction not align
 		if(direction_align.not_align()) return;
@@ -398,6 +399,7 @@ void Gimbal::direction_update(void *parameter)
 			scope_almz = mot.z * 10000;
 			
 			can.send_control_rpy(mot.x, mot.y, mot.z);
+			motors_output = mot;
 			
 			if(!direction_align.not_align())
 				param_loader.save_all();
@@ -431,29 +433,21 @@ int scop_gx, scop_gy, scop_gz;
 void Gimbal::generate_attitude_quat_pck(void *parameter)
 {
 	attitude_quat_pck.time_boot_ms = 0;
-#ifdef USING_MADGWICK
-	attitude_quat_pck.q1 = madgwick.get_q0();
-	attitude_quat_pck.q2 = madgwick.get_q1();
-	attitude_quat_pck.q3 = madgwick.get_q2();
-	attitude_quat_pck.q4 = madgwick.get_q3();
-#endif
-#ifdef USING_MAHONY
-	attitude_quat_pck.q1 = mahony.get_q0();
-	attitude_quat_pck.q2 = mahony.get_q1();
-	attitude_quat_pck.q3 = mahony.get_q2();
-	attitude_quat_pck.q4 = mahony.get_q3();
-#endif
-#ifdef USING_EKF
-	attitude_quat_pck.q1 = 1;
-	attitude_quat_pck.q2 = 0;
-	attitude_quat_pck.q3 = 0;
-	attitude_quat_pck.q4 = 0;
-#endif
+
+
+	attitude_quat_pck.q1 = small_ekf.q0();
+	attitude_quat_pck.q2 = small_ekf.q1();
+	attitude_quat_pck.q3 = small_ekf.q2();
+	attitude_quat_pck.q4 = small_ekf.q3();
 	
 	// Motors Output
-	attitude_quat_pck.rollspeed = motors_output.x;
-	attitude_quat_pck.pitchspeed = motors_output.y;
-	attitude_quat_pck.yawspeed = motors_output.z;
+//	attitude_quat_pck.rollspeed = motors_output.x;
+//	attitude_quat_pck.pitchspeed = motors_output.y;
+//	attitude_quat_pck.yawspeed = motors_output.z;
+	// ENC
+	attitude_quat_pck.rollspeed = axis_angle.x * 57.29f;
+	attitude_quat_pck.pitchspeed = axis_angle.y * 57.29f;
+	attitude_quat_pck.yawspeed = axis_angle.z * 57.29f;
 	// Angle
 //	attitude_quat_pck.rollspeed = attitude.euler_rad.x * 57.29577951308232f;
 //	attitude_quat_pck.pitchspeed = attitude.euler_rad.y * 57.29577951308232f;

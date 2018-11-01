@@ -119,6 +119,10 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
+          <Key>DLGUARM</Key>
+        </SetRegEntry>
+        <SetRegEntry>
+          <Number>0</Number>
           <Key>ST-LINKIII-KEIL_SWO</Key>
           <Name>-U50FF6F064977535530190487 -I0 -O206 -S1 -C0 -A0 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO18 -TC10000000 -TP21 -TDS8004 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024.FLM -FS08000000 -FL0100000 -FP0($$Device:STM32F407ZGTx$CMSIS\Flash\STM32F4xx_1024.FLM)</Name>
         </SetRegEntry>
@@ -152,9 +156,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>968</LineNumber>
+          <LineNumber>975</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134337616</Address>
+          <Address>134338288</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,30 +167,94 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\apps\Gimbal.cpp</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\968</Expression>
+          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\975</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>162</LineNumber>
+          <LineNumber>970</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134294694</Address>
+          <Address>134338240</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\apps\Function\AP_SmallEKF.cpp</Filename>
+          <Filename>.\apps\Gimbal.cpp</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\XD_SPRain_BGC\apps/Function/AP_SmallEKF.cpp\162</Expression>
+          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\970</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
+          <LineNumber>967</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134338224</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\apps\Gimbal.cpp</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\967</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>962</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134338162</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\apps\Gimbal.cpp</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\962</Expression>
+        </Bp>
+        <Bp>
+          <Number>4</Number>
+          <Type>0</Type>
+          <LineNumber>935</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134337894</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\apps\Gimbal.cpp</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\935</Expression>
+        </Bp>
+        <Bp>
+          <Number>5</Number>
+          <Type>0</Type>
+          <LineNumber>401</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134333824</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\apps\Gimbal.cpp</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\401</Expression>
+        </Bp>
+        <Bp>
+          <Number>6</Number>
+          <Type>0</Type>
           <LineNumber>154</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134251516</Address>
+          <Address>134251576</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -198,11 +266,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Function/accelerometer_calibration.cpp\154</Expression>
         </Bp>
         <Bp>
-          <Number>3</Number>
+          <Number>7</Number>
           <Type>0</Type>
           <LineNumber>124</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134251370</Address>
+          <Address>134251430</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -214,11 +282,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Function/accelerometer_calibration.cpp\124</Expression>
         </Bp>
         <Bp>
-          <Number>4</Number>
+          <Number>8</Number>
           <Type>0</Type>
           <LineNumber>109</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134251360</Address>
+          <Address>134251420</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -230,11 +298,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Function/accelerometer_calibration.cpp\109</Expression>
         </Bp>
         <Bp>
-          <Number>5</Number>
+          <Number>9</Number>
           <Type>0</Type>
           <LineNumber>324</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134260842</Address>
+          <Address>134260902</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -246,11 +314,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Function/AccelCalibrator.cpp\324</Expression>
         </Bp>
         <Bp>
-          <Number>6</Number>
+          <Number>10</Number>
           <Type>0</Type>
           <LineNumber>374</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134347840</Address>
+          <Address>134348628</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -262,11 +330,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Function/att2mot.cpp\374</Expression>
         </Bp>
         <Bp>
-          <Number>7</Number>
+          <Number>11</Number>
           <Type>0</Type>
           <LineNumber>230</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134268378</Address>
+          <Address>134268438</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -278,11 +346,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Function/DCM_EKF_IMU.cpp\230</Expression>
         </Bp>
         <Bp>
-          <Number>8</Number>
+          <Number>12</Number>
           <Type>0</Type>
           <LineNumber>327</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134260850</Address>
+          <Address>134260910</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -294,27 +362,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Function/AccelCalibrator.cpp\327</Expression>
         </Bp>
         <Bp>
-          <Number>9</Number>
-          <Type>0</Type>
-          <LineNumber>928</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134337228</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\apps\Gimbal.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\XD_SPRain_BGC\apps/Gimbal.cpp\928</Expression>
-        </Bp>
-        <Bp>
-          <Number>10</Number>
+          <Number>13</Number>
           <Type>0</Type>
           <LineNumber>172</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134317112</Address>
+          <Address>134317284</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -326,11 +378,11 @@
           <Expression>\\XD_SPRain_BGC\apps/Driver_Interface/fast_uart.c\172</Expression>
         </Bp>
         <Bp>
-          <Number>11</Number>
+          <Number>14</Number>
           <Type>0</Type>
           <LineNumber>194</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134317208</Address>
+          <Address>134317380</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -340,102 +392,6 @@
           <Filename>.\apps\Driver_Interface\fast_uart.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\XD_SPRain_BGC\apps/Driver_Interface/fast_uart.c\194</Expression>
-        </Bp>
-        <Bp>
-          <Number>12</Number>
-          <Type>0</Type>
-          <LineNumber>933</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\apps\Gimbal.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>13</Number>
-          <Type>0</Type>
-          <LineNumber>973</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\apps\Gimbal.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>14</Number>
-          <Type>0</Type>
-          <LineNumber>936</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\apps\Gimbal.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>15</Number>
-          <Type>0</Type>
-          <LineNumber>941</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\apps\Gimbal.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>16</Number>
-          <Type>0</Type>
-          <LineNumber>976</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\apps\Gimbal.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>17</Number>
-          <Type>0</Type>
-          <LineNumber>981</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>.\apps\Gimbal.cpp</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>

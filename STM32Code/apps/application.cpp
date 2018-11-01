@@ -70,7 +70,7 @@ extern "C"
 const Scheduler::Task Gimbal::scheduler_tasks[] PROGMEM = {
 //      Name                Event        Rate(Hz)   RunTime(us)S
 //------------------------------------------------------------
-    { "attitude",      ATTITUDE_EVENT,    1000,       100},
+    { "attitude",      ATTITUDE_EVENT,    2000,       100},
     { "control",       CONTROL_EVENT,     1000,       100},
 		{ "sekf",          SEKF_EVENT,        500,        100},
     { "serial",        SERIAL_EVENT,      50,         100},
