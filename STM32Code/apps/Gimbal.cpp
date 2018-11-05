@@ -1,7 +1,7 @@
 #include "Gimbal.h"
 #include "thread_config.h"
 
-#define FIRST_TIME_INIT
+//#define FIRST_TIME_INIT
 
 int scop_tms;
 int scop_roll;
@@ -52,12 +52,12 @@ Gimbal::Gimbal():
 //		fc_angle_z(0, 70, 0, 0.07),
 		
 		//D1
-		fc_speed_x(0, 2, 9, 0.9),
-		fc_angle_x(0, 70, 0, 0.12),
-		fc_speed_y(0, 1.6, 6, 0.8),
-		fc_angle_y(0, 70, 0, 0.12),
-		fc_speed_z(0, 2.4, 6, 1.5),
-		fc_angle_z(0, 70, 0, 0.12),
+		fc_speed_x(0, 1, 0.5, 1.8),
+		fc_angle_x(0, 400, 0, 0.1),
+		fc_speed_y(0, 2.1, 0.5, 1),
+		fc_angle_y(0, 400, 0, 0.1),
+		fc_speed_z(0, 1.5, 0.5, 2),
+		fc_angle_z(0, 300, 0, 0.1),
 		
     attitude_control(attitude, 
                      param.pd_stabilize_roll, param.pd_stabilize_pitch, param.pd_stabilize_yaw,
@@ -445,17 +445,17 @@ void Gimbal::generate_attitude_quat_pck(void *parameter)
 //	attitude_quat_pck.pitchspeed = motors_output.y;
 //	attitude_quat_pck.yawspeed = motors_output.z;
 	// ENC
-	attitude_quat_pck.rollspeed = axis_angle.x * 57.29f;
-	attitude_quat_pck.pitchspeed = axis_angle.y * 57.29f;
-	attitude_quat_pck.yawspeed = axis_angle.z * 57.29f;
+//	attitude_quat_pck.rollspeed = axis_angle.x * 57.29f;
+//	attitude_quat_pck.pitchspeed = axis_angle.y * 57.29f;
+//	attitude_quat_pck.yawspeed = axis_angle.z * 57.29f;
 	// Angle
 //	attitude_quat_pck.rollspeed = attitude.euler_rad.x * 57.29577951308232f;
 //	attitude_quat_pck.pitchspeed = attitude.euler_rad.y * 57.29577951308232f;
 //	attitude_quat_pck.yawspeed = attitude.euler_rad.z * 57.29577951308232f;
 //	// Gyro
-//	attitude_quat_pck.rollspeed = attitude.Gyro_af.x*57.29577951308232f;
-//	attitude_quat_pck.pitchspeed = attitude.Gyro_af.y*57.29577951308232f;
-//	attitude_quat_pck.yawspeed = attitude.Gyro_af.z*57.29577951308232f;
+	attitude_quat_pck.rollspeed = attitude.Gyro_af.x*57.29577951308232f;
+	attitude_quat_pck.pitchspeed = attitude.Gyro_af.y*57.29577951308232f;
+	attitude_quat_pck.yawspeed = attitude.Gyro_af.z*57.29577951308232f;
 	// Acc earth
 //	attitude_quat_pck.rollspeed = attitude.ax_earth();
 //	attitude_quat_pck.pitchspeed = attitude.ay_earth();
